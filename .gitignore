@@ -231,4 +231,19 @@ iTunesMetadata.plist
 # *.xcworkspace
 
 # SPM Package.resolved (if not tracking exact versions)
-Package.resolved
+Package.resolvedGenerated/
+Generated/
+Generated/
+Generated/
+Generated/
+Generated/
+Generated/
+Generated/
+Generated/
+Generated/
+Generated/
+Generated/
+Generated/
+Generated/
+Generated/
+Generated/

@@ -7,18 +7,36 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BC90702B2E40278E004B0623 /* MoneyAppGenerated in Frameworks */ = {isa = PBXBuildFile; productRef = BC90702A2E40278E004B0623 /* MoneyAppGenerated */; };
+		BC90702E2E402959004B0623 /* MoneyAppGenerated in Frameworks */ = {isa = PBXBuildFile; productRef = BC90702D2E402959004B0623 /* MoneyAppGenerated */; };
+		BC9070362E402996004B0623 /* ModelIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC9070342E402996004B0623 /* ModelIndex.swift */; };
+		BC9070372E402996004B0623 /* APIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC9070332E402996004B0623 /* APIService.swift */; };
+		BC90703A2E402B34004B0623 /* MoneyAppGenerated in Frameworks */ = {isa = PBXBuildFile; productRef = BC9070392E402B34004B0623 /* MoneyAppGenerated */; };
 		BC9A9CD22E3F2D6A00352F2B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BC9A9CCD2E3F2D6A00352F2B /* Assets.xcassets */; };
 		BC9A9CD32E3F2D6A00352F2B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC9A9CCE2E3F2D6A00352F2B /* ContentView.swift */; };
 		BC9A9CD42E3F2D6A00352F2B /* MoneyAppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC9A9CCF2E3F2D6A00352F2B /* MoneyAppApp.swift */; };
-		BC9A9CD72E3F2E0D00352F2B /* PreviewAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BC9A9CD62E3F2E0D00352F2B /* PreviewAssets.xcassets */; };
+		BC9A9CEA2E40202400352F2B /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC9A9CE12E40202400352F2B /* HomeView.swift */; };
+		BC9A9CEC2E40202400352F2B /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC9A9CDF2E40202400352F2B /* HomeViewModel.swift */; };
+		BC9A9CED2E40202400352F2B /* HomeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC9A9CDD2E40202400352F2B /* HomeService.swift */; };
+		BC9A9CEF2E40202400352F2B /* AppRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC9A9CD82E40202400352F2B /* AppRouter.swift */; };
+		BC9A9CF02E40202400352F2B /* HomeModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC9A9CDB2E40202400352F2B /* HomeModels.swift */; };
+		BC9A9CF12E40202400352F2B /* PreviewAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BC9A9CE82E40202400352F2B /* PreviewAssets.xcassets */; };
+		BC9A9D122E40261800352F2B /* MoneyAppGenerated in Frameworks */ = {isa = PBXBuildFile; productRef = BC9A9D112E40261800352F2B /* MoneyAppGenerated */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		BC9070332E402996004B0623 /* APIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIService.swift; sourceTree = "<group>"; };
+		BC9070342E402996004B0623 /* ModelIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelIndex.swift; sourceTree = "<group>"; };
 		BC9A9CBA2E3F2D3C00352F2B /* MoneyApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MoneyApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BC9A9CCD2E3F2D6A00352F2B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		BC9A9CCE2E3F2D6A00352F2B /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		BC9A9CCF2E3F2D6A00352F2B /* MoneyAppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoneyAppApp.swift; sourceTree = "<group>"; };
-		BC9A9CD62E3F2E0D00352F2B /* PreviewAssets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = PreviewAssets.xcassets; sourceTree = "<group>"; };
+		BC9A9CD82E40202400352F2B /* AppRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRouter.swift; sourceTree = "<group>"; };
+		BC9A9CDB2E40202400352F2B /* HomeModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeModels.swift; sourceTree = "<group>"; };
+		BC9A9CDD2E40202400352F2B /* HomeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeService.swift; sourceTree = "<group>"; };
+		BC9A9CDF2E40202400352F2B /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
+		BC9A9CE12E40202400352F2B /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		BC9A9CE82E40202400352F2B /* PreviewAssets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = PreviewAssets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -26,12 +44,25 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BC9A9D122E40261800352F2B /* MoneyAppGenerated in Frameworks */,
+				BC90703A2E402B34004B0623 /* MoneyAppGenerated in Frameworks */,
+				BC90702B2E40278E004B0623 /* MoneyAppGenerated in Frameworks */,
+				BC90702E2E402959004B0623 /* MoneyAppGenerated in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		BC9070352E402996004B0623 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				BC9070332E402996004B0623 /* APIService.swift */,
+				BC9070342E402996004B0623 /* ModelIndex.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
 		BC9A9CB12E3F2D3C00352F2B = {
 			isa = PBXGroup;
 			children = (
@@ -51,7 +82,10 @@
 		BC9A9CD02E3F2D6A00352F2B /* MoneyApp */ = {
 			isa = PBXGroup;
 			children = (
-				BC9A9CD52E3F2DB300352F2B /* Preview Content */,
+				BC9070352E402996004B0623 /* Models */,
+				BC9A9CDA2E40202400352F2B /* Core */,
+				BC9A9CE42E40202400352F2B /* Features */,
+				BC9A9CE92E40202400352F2B /* Preview Content */,
 				BC9A9CCD2E3F2D6A00352F2B /* Assets.xcassets */,
 				BC9A9CCE2E3F2D6A00352F2B /* ContentView.swift */,
 				BC9A9CCF2E3F2D6A00352F2B /* MoneyAppApp.swift */,
@@ -59,10 +93,77 @@
 			path = MoneyApp;
 			sourceTree = "<group>";
 		};
-		BC9A9CD52E3F2DB300352F2B /* Preview Content */ = {
+		BC9A9CD92E40202400352F2B /* Navigation */ = {
 			isa = PBXGroup;
 			children = (
-				BC9A9CD62E3F2E0D00352F2B /* PreviewAssets.xcassets */,
+				BC9A9CD82E40202400352F2B /* AppRouter.swift */,
+			);
+			path = Navigation;
+			sourceTree = "<group>";
+		};
+		BC9A9CDA2E40202400352F2B /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				BC9A9CD92E40202400352F2B /* Navigation */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		BC9A9CDC2E40202400352F2B /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				BC9A9CDB2E40202400352F2B /* HomeModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		BC9A9CDE2E40202400352F2B /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				BC9A9CDD2E40202400352F2B /* HomeService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		BC9A9CE02E40202400352F2B /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				BC9A9CDF2E40202400352F2B /* HomeViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		BC9A9CE22E40202400352F2B /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				BC9A9CE12E40202400352F2B /* HomeView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		BC9A9CE32E40202400352F2B /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				BC9A9CDC2E40202400352F2B /* Models */,
+				BC9A9CDE2E40202400352F2B /* Services */,
+				BC9A9CE02E40202400352F2B /* ViewModels */,
+				BC9A9CE22E40202400352F2B /* Views */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
+		BC9A9CE42E40202400352F2B /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				BC9A9CE32E40202400352F2B /* Home */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		BC9A9CE92E40202400352F2B /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				BC9A9CE82E40202400352F2B /* PreviewAssets.xcassets */,
 			);
 			path = "Preview Content";
 			sourceTree = "<group>";
@@ -84,6 +185,10 @@
 			);
 			name = MoneyApp;
 			packageProductDependencies = (
+				BC9A9D112E40261800352F2B /* MoneyAppGenerated */,
+				BC90702A2E40278E004B0623 /* MoneyAppGenerated */,
+				BC90702D2E402959004B0623 /* MoneyAppGenerated */,
+				BC9070392E402B34004B0623 /* MoneyAppGenerated */,
 			);
 			productName = MoneyApp;
 			productReference = BC9A9CBA2E3F2D3C00352F2B /* MoneyApp.app */;
@@ -113,6 +218,9 @@
 			);
 			mainGroup = BC9A9CB12E3F2D3C00352F2B;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				BC9070382E402B34004B0623 /* XCLocalSwiftPackageReference "Generated" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BC9A9CBB2E3F2D3C00352F2B /* Products */;
 			projectDirPath = "";
@@ -128,8 +236,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BC9A9CF12E40202400352F2B /* PreviewAssets.xcassets in Resources */,
 				BC9A9CD22E3F2D6A00352F2B /* Assets.xcassets in Resources */,
-				BC9A9CD72E3F2E0D00352F2B /* PreviewAssets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -140,6 +248,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BC9A9CEA2E40202400352F2B /* HomeView.swift in Sources */,
+				BC9A9CEC2E40202400352F2B /* HomeViewModel.swift in Sources */,
+				BC9070362E402996004B0623 /* ModelIndex.swift in Sources */,
+				BC9070372E402996004B0623 /* APIService.swift in Sources */,
+				BC9A9CED2E40202400352F2B /* HomeService.swift in Sources */,
+				BC9A9CEF2E40202400352F2B /* AppRouter.swift in Sources */,
+				BC9A9CF02E40202400352F2B /* HomeModels.swift in Sources */,
 				BC9A9CD32E3F2D6A00352F2B /* ContentView.swift in Sources */,
 				BC9A9CD42E3F2D6A00352F2B /* MoneyAppApp.swift in Sources */,
 			);
@@ -278,6 +393,7 @@
 				DEVELOPMENT_TEAM = LM5XW92LHW;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "The Money App";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -307,6 +423,7 @@
 				DEVELOPMENT_TEAM = LM5XW92LHW;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "The Money App";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -347,6 +464,32 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		BC9070382E402B34004B0623 /* XCLocalSwiftPackageReference "Generated" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Generated;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		BC90702A2E40278E004B0623 /* MoneyAppGenerated */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MoneyAppGenerated;
+		};
+		BC90702D2E402959004B0623 /* MoneyAppGenerated */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MoneyAppGenerated;
+		};
+		BC9070392E402B34004B0623 /* MoneyAppGenerated */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MoneyAppGenerated;
+		};
+		BC9A9D112E40261800352F2B /* MoneyAppGenerated */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MoneyAppGenerated;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = BC9A9CB22E3F2D3C00352F2B /* Project object */;
 }

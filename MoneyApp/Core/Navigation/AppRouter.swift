@@ -15,6 +15,7 @@ final class AppRouter {
     
     enum Screen: Hashable {
         case auth
+        case home
         case accounts
         case transactions
         case settings
@@ -47,12 +48,20 @@ final class AppRouter {
     }
     
     func showMainApp() {
-        navigate(to: .accounts) // Default main screen
+        navigate(to: .home) // Default main screen
         popToRoot()
+    }
+    
+    func showHome() {
+        navigate(to: .home)
     }
     
     func showTransactions() {
         navigate(to: .transactions)
+    }
+    
+    func showAccounts() {
+        navigate(to: .accounts)
     }
     
     func showSettings() {
