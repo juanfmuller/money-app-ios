@@ -2,7 +2,7 @@
 
 ## 🎯 Development Guidelines
 
-This iOS codebase follows strict MVVM architecture patterns with modern SwiftUI and Swift concurrency. **Always follow these rules when making changes.**
+This iOS codebase follows modern MVVM architecture with **Swift 6 Observation**, **actor-based concurrency**, and **simple navigation patterns**. **Always follow these rules when making changes.**
 
 ## 📁 Detailed Rules Documentation
 
@@ -10,11 +10,19 @@ For comprehensive guidelines, refer to these specific rule files:
 
 ### 🏗️ [Architecture Rules](.cursor/rules/architecture.md)
 - Feature-based code organization (mirrors backend structure)
-- MVVM pattern with SwiftUI
-- Modern Swift concurrency (async/await)
+- MVVM pattern with Swift 6 @Observable (no @ObservableObject/@Published)
+- Actor-based services with protocol injection
+- Modern Swift concurrency (async/await + Sendable)
 - No caching strategy (polling-based)
 - Separation of concerns (Views → ViewModels → Services → Models)
 - Adding new features workflow
+
+### 🧭 [Navigation Rules](.cursor/rules/navigation.md)
+- Simple centralized AppRouter for MVP navigation
+- NavigationStack with enum-based routing
+- Environment-based router injection
+- Feature view factories for quick "glueing"
+- Sheet and fullScreenCover presentation patterns
 
 ### 🧪 [Testing Rules](.cursor/rules/testing.md)
 - Unit testing for ViewModels and Services
@@ -80,12 +88,15 @@ For comprehensive guidelines, refer to these specific rule files:
 ## ✅ Always Do These Things:
 
 - ✅ **Always build and test after changing Swift files**
-- ✅ Always use @ObservableObject for ViewModels
+- ✅ Always use @Observable for ViewModels (not @ObservableObject)
+- ✅ Always use @State for ViewModel ownership (not @StateObject)
+- ✅ Always use actors for services with protocol injection
 - ✅ Always delegate API calls to Services
-- ✅ Always use async/await for networking
+- ✅ Always use async/await for networking with Sendable protocols
 - ✅ Always handle errors gracefully
 - ✅ Always validate with Codable models
 - ✅ Always organize by feature domain
+- ✅ Always use AppRouter for navigation
 
 ## 🎪 Architecture Quick Reference
 
@@ -127,12 +138,13 @@ AccountsTests                   # Account management tests
 TransactionsTests               # Transaction handling tests
 ```
 
-## 🔗 MVVM Pattern Quick Reference
+## 🔗 MVVM Pattern Quick Reference (Swift 6)
 
 ```swift
 // View Layer (SwiftUI) - UI concerns only
 struct LoginView: View {
-    @StateObject private var viewModel = LoginViewModel()
+    @State private var viewModel = LoginViewModel()  // ← @State, not @StateObject
+    @Environment(AppRouter.self) private var router
     
     var body: some View {
         VStack {
@@ -147,26 +159,35 @@ struct LoginView: View {
         } message: {
             Text(viewModel.errorMessage)  // ← ViewModel handles errors
         }
+        .onAppear {
+            viewModel.router = router  // ← Inject router
+        }
     }
 }
 
-// ViewModel Layer (@ObservableObject) - Business logic only
+// ViewModel Layer (@Observable) - Business logic only
+@Observable
 @MainActor
-class LoginViewModel: ObservableObject {
-    @Published var email = ""
-    @Published var password = ""
-    @Published var isLoading = false
-    @Published var showError = false
-    @Published var errorMessage = ""
+class LoginViewModel {
+    var email = ""  // ← No @Published needed
+    var password = ""
+    var isLoading = false
+    var showError = false
+    var errorMessage = ""
+    var router: AppRouter?
     
-    private let authService = AuthService()
+    private let authService: AuthServiceProtocol
+    
+    init(authService: AuthServiceProtocol = AuthService()) {
+        self.authService = authService
+    }
     
     func login() async {
         isLoading = true
         do {
             let request = LoginRequest(email: email, password: password)
             let response = try await authService.login(request)  // ← Delegate to Service
-            // Handle success...
+            router?.navigateToMain()  // ← Use router for navigation
         } catch {
             handleError(error)  // ← Proper error handling
         }
@@ -174,9 +195,17 @@ class LoginViewModel: ObservableObject {
     }
 }
 
-// Service Layer - API calls only
-class AuthService {
-    private let apiClient = APIClient.shared
+// Service Layer - Actor with protocol injection
+protocol AuthServiceProtocol: Sendable {
+    func login(_ request: LoginRequest) async throws -> AuthResponse
+}
+
+actor AuthService: AuthServiceProtocol {
+    private let apiClient: APIClientProtocol
+    
+    init(apiClient: APIClientProtocol = APIClient.shared) {
+        self.apiClient = apiClient
+    }
     
     func login(_ request: LoginRequest) async throws -> AuthResponse {
         return try await apiClient.post("/api/auth/login", body: request)
@@ -203,12 +232,15 @@ When reviewing or writing code, ensure:
 - [ ] Code is organized by feature, not layer
 - [ ] Views only handle UI concerns
 - [ ] Business logic is in ViewModels
-- [ ] API calls are in Services
+- [ ] API calls are in Services with actors
 - [ ] Codable models define API contracts
+- [ ] Navigation uses AppRouter
 
 ### SwiftUI & Concurrency ✅
-- [ ] Views use @StateObject for ViewModels
+- [ ] Views use @State for ViewModels (not @StateObject)
+- [ ] ViewModels use @Observable (not @ObservableObject)
 - [ ] ViewModels are @MainActor classes
+- [ ] Services are actors with Sendable protocols
 - [ ] Async operations use async/await
 - [ ] Proper Task { } usage in views
 - [ ] No force unwrapping without safety
@@ -234,19 +266,37 @@ When reviewing or writing code, ensure:
 
 ## 🎯 API Integration Patterns
 
-### Polling Strategy (No Caching)
+### Polling Strategy (No Caching) - Swift 6 Style
 ```swift
-class TransactionViewModel: ObservableObject {
-    @Published var transactions: [Transaction] = []
-    private let transactionService = TransactionService()
+@Observable
+@MainActor
+class TransactionViewModel {
+    var transactions: [Transaction] = []
+    var isPolling = false
+    
+    private let transactionService: TransactionServiceProtocol
+    private var pollingTask: Task<Void, Never>?
+    
+    init(transactionService: TransactionServiceProtocol = TransactionService()) {
+        self.transactionService = transactionService
+    }
     
     func startPolling() {
-        Task {
+        guard !isPolling else { return }
+        isPolling = true
+        
+        pollingTask = Task {
             while !Task.isCancelled {
                 await refreshTransactions()
                 try? await Task.sleep(nanoseconds: 3_000_000_000) // 3 seconds
             }
         }
+    }
+    
+    func stopPolling() {
+        pollingTask?.cancel()
+        pollingTask = nil
+        isPolling = false
     }
     
     private func refreshTransactions() async {
@@ -259,18 +309,35 @@ class TransactionViewModel: ObservableObject {
 }
 ```
 
-### JWT Token Management
+### JWT Token Management - Actor Pattern
 ```swift
-class APIClient {
-    private var authToken: String? {
-        KeychainService.shared.getToken()
+protocol TokenManagerProtocol: Sendable {
+    func getAccessToken() async -> String?
+    func saveTokens(accessToken: String, refreshToken: String?) async
+    func clearTokens() async
+}
+
+actor TokenManager: TokenManagerProtocol {
+    private let keychainService: KeychainServiceProtocol
+    
+    init(keychainService: KeychainServiceProtocol = KeychainService.shared) {
+        self.keychainService = keychainService
     }
     
-    func authenticatedRequest<T: Codable>(_ endpoint: String) async throws -> T {
-        guard let token = authToken else {
-            throw APIError.notAuthenticated
+    func getAccessToken() async -> String? {
+        return await keychainService.getToken(for: "access_token")
+    }
+    
+    func saveTokens(accessToken: String, refreshToken: String?) async {
+        await keychainService.save(accessToken, for: "access_token")
+        if let refreshToken = refreshToken {
+            await keychainService.save(refreshToken, for: "refresh_token")
         }
-        // Use token in Authorization header...
+    }
+    
+    func clearTokens() async {
+        await keychainService.delete("access_token")
+        await keychainService.delete("refresh_token")
     }
 }
 ```
@@ -300,13 +367,14 @@ The iOS app integrates with these backend endpoints:
 
 ## 🎪 Remember
 
-This architecture enables:
-- **🚀 Fast development**: Clear MVVM patterns reduce decision fatigue
-- **🔧 Easy maintenance**: Features are isolated and testable
-- **👥 Team collaboration**: Consistent conventions across the codebase
+This modern architecture enables:
+- **🚀 Fast development**: Swift 6 @Observable reduces boilerplate significantly
+- **🔧 Easy maintenance**: Actor-based services prevent race conditions
+- **👥 Team collaboration**: Protocol injection makes testing effortless
 - **🎯 Quality assurance**: Tests catch regressions automatically
 - **📈 Scalability**: Add features without affecting existing code
 - **⚡ Real-time updates**: Efficient polling keeps data fresh
+- **🧭 Simple navigation**: AppRouter pattern allows quick feature "glueing"
 
 **Every Swift file change requires building and testing. No exceptions.** 🧪
 

@@ -1,8 +1,13 @@
+---
+globs: *.swift
+alwaysApply: false
+---
+
 # 🏗️ iOS Architecture Rules
 
 ## Core Principles
 
-This iOS app follows a **strict MVVM pattern** with **feature-based organization** that mirrors the backend structure. Every feature is self-contained with clear separation of concerns.
+This iOS app follows a **modern MVVM pattern** with **Swift 6 Observation** and **feature-based organization** that mirrors the backend structure. Every feature is self-contained with clear separation of concerns, leveraging the latest Swift concurrency and observation patterns for optimal performance.
 
 ## 📁 Feature-Based Organization
 
@@ -122,9 +127,9 @@ MoneyApp/
 - Handle authentication
 
 ```swift
-// ✅ GOOD: View focuses on UI only
+// ✅ GOOD: View focuses on UI only with Swift 6 @Observable
 struct LoginView: View {
-    @StateObject private var viewModel = LoginViewModel()
+    @State private var viewModel = LoginViewModel()
     
     var body: some View {
         VStack {
@@ -167,12 +172,13 @@ struct LoginView: View {
 }
 ```
 
-### 2. ViewModels (@ObservableObject) - Business Logic
+### 2. ViewModels (@Observable) - Business Logic
 
 **Purpose**: Contain all business logic and coordinate between Views and Services
 
 **✅ DO:**
-- Manage @Published properties for UI state
+- Use @Observable macro for automatic observation
+- Manage regular properties for UI state (no @Published needed)
 - Coordinate API calls through Services
 - Handle error states and messages
 - Transform data for UI presentation
@@ -186,16 +192,21 @@ struct LoginView: View {
 - Implement networking logic
 
 ```swift
-// ✅ GOOD: ViewModel handles business logic
+// ✅ GOOD: ViewModel handles business logic with Swift 6 @Observable
+@Observable
 @MainActor
-class LoginViewModel: ObservableObject {
-    @Published var email = ""
-    @Published var password = ""
-    @Published var isLoading = false
-    @Published var showError = false
-    @Published var errorMessage = ""
+class LoginViewModel {
+    var email = ""
+    var password = ""
+    var isLoading = false
+    var showError = false
+    var errorMessage = ""
     
-    private let authService = AuthService()
+    private let authService: AuthServiceProtocol
+    
+    init(authService: AuthServiceProtocol = AuthService()) {
+        self.authService = authService
+    }
     
     func login() async {
         guard isValidInput() else {
@@ -225,30 +236,48 @@ class LoginViewModel: ObservableObject {
 }
 ```
 
-### 3. Services - API Integration
+### 3. Services - API Integration & Protocol-Based Design
 
-**Purpose**: Handle all networking and API communication
+**Purpose**: Handle all networking and API communication with proper concurrency patterns
 
 **✅ DO:**
+- Use protocols for dependency injection and testing
 - Make HTTP requests to backend
 - Handle request/response serialization
 - Manage authentication headers
 - Implement retry logic
 - Handle network errors
+- Use actors for shared mutable state
 
 **❌ DON'T:**
 - Contain business logic
 - Manage UI state
 - Transform data for UI (return raw API responses)
-- Store credentials
+- Store credentials directly (use secure storage)
 
 ```swift
-// ✅ GOOD: Service handles API communication only
-class AuthService {
-    private let apiClient = APIClient.shared
+// ✅ GOOD: Protocol-based service with dependency injection
+protocol AuthServiceProtocol: Sendable {
+    func login(_ request: LoginRequest) async throws -> AuthResponse
+    func register(_ request: RegisterRequest) async throws -> AuthResponse
+    func updateDeviceToken(_ token: String) async throws
+}
+
+actor AuthService: AuthServiceProtocol {
+    private let apiClient: APIClientProtocol
+    private let tokenManager: TokenManagerProtocol
+    
+    init(apiClient: APIClientProtocol = APIClient.shared, 
+         tokenManager: TokenManagerProtocol = TokenManager.shared) {
+        self.apiClient = apiClient
+        self.tokenManager = tokenManager
+    }
     
     func login(_ request: LoginRequest) async throws -> AuthResponse {
-        return try await apiClient.post("/api/auth/login", body: request)
+        let response: AuthResponse = try await apiClient.post("/api/auth/login", body: request)
+        await tokenManager.saveTokens(accessToken: response.accessToken, 
+                                    refreshToken: response.refreshToken)
+        return response
     }
     
     func register(_ request: RegisterRequest) async throws -> AuthResponse {
@@ -257,7 +286,7 @@ class AuthService {
     
     func updateDeviceToken(_ token: String) async throws {
         let request = DeviceTokenRequest(deviceToken: token)
-        try await apiClient.post("/api/auth/device-token", body: request)
+        let _: SuccessResponse = try await apiClient.post("/api/auth/device-token", body: request)
     }
 }
 ```
@@ -381,9 +410,9 @@ struct Transaction: Codable {
 ### ✅ Correct Architecture
 
 ```swift
-// ✅ GOOD: View delegates to ViewModel
+// ✅ GOOD: View delegates to ViewModel with Swift 6 @Observable
 struct TransactionListView: View {
-    @StateObject private var viewModel = TransactionListViewModel()
+    @State private var viewModel = TransactionListViewModel()
     
     var body: some View {
         List(viewModel.filteredTransactions) { transaction in
@@ -395,13 +424,20 @@ struct TransactionListView: View {
     }
 }
 
-// ✅ GOOD: ViewModel contains business logic
+// ✅ GOOD: ViewModel contains business logic with @Observable
+@Observable
 @MainActor
-class TransactionListViewModel: ObservableObject {
-    @Published var transactions: [Transaction] = []
-    @Published var minAmount: Decimal = 0
+class TransactionListViewModel {
+    var transactions: [Transaction] = []
+    var minAmount: Decimal = 0
+    var isLoading = false
+    var errorMessage = ""
     
-    private let transactionService = TransactionService()
+    private let transactionService: TransactionServiceProtocol
+    
+    init(transactionService: TransactionServiceProtocol = TransactionService()) {
+        self.transactionService = transactionService
+    }
     
     var filteredTransactions: [Transaction] {
         transactions
@@ -410,17 +446,27 @@ class TransactionListViewModel: ObservableObject {
     }
     
     func loadTransactions() async {
+        isLoading = true
         do {
             transactions = try await transactionService.getTransactions()
         } catch {
-            // Handle error
+            errorMessage = error.localizedDescription
         }
+        isLoading = false
     }
 }
 
-// ✅ GOOD: Service only handles API
-class TransactionService {
-    private let apiClient = APIClient.shared
+// ✅ GOOD: Protocol-based service with proper concurrency
+protocol TransactionServiceProtocol: Sendable {
+    func getTransactions() async throws -> [Transaction]
+}
+
+actor TransactionService: TransactionServiceProtocol {
+    private let apiClient: APIClientProtocol
+    
+    init(apiClient: APIClientProtocol = APIClient.shared) {
+        self.apiClient = apiClient
+    }
     
     func getTransactions() async throws -> [Transaction] {
         return try await apiClient.get("/api/transactions")
@@ -442,14 +488,14 @@ struct Transaction: Codable, Identifiable {
 ### State Management
 
 ```swift
-// ✅ GOOD: Proper state object usage
+// ✅ GOOD: Proper state management with Swift 6 @Observable
 struct ContentView: View {
-    @StateObject private var authViewModel = AuthViewModel()  // Owner
+    @State private var authViewModel = AuthViewModel()  // Owner with @State
     
     var body: some View {
         if authViewModel.isAuthenticated {
             MainTabView()
-                .environmentObject(authViewModel)  // Pass down
+                .environment(authViewModel)  // Pass down with .environment()
         } else {
             LoginView()
         }
@@ -457,13 +503,23 @@ struct ContentView: View {
 }
 
 struct MainTabView: View {
-    @EnvironmentObject var authViewModel: AuthViewModel  // Receive from parent
+    @Environment(AuthViewModel.self) private var authViewModel  // Receive from parent
     
     var body: some View {
         TabView {
             TransactionListView()
                 .tabItem { Label("Transactions", systemImage: "list.bullet") }
         }
+    }
+}
+
+// For binding to child views
+struct ProfileEditView: View {
+    @Bindable var user: User  // Use @Bindable for two-way binding
+    
+    var body: some View {
+        TextField("First Name", text: $user.firstName)
+        TextField("Last Name", text: $user.lastName)
     }
 }
 ```
@@ -516,8 +572,16 @@ struct NewFeatureResponse: Codable {
 3. **Create Service** (API integration)
 ```swift
 // Services/NewFeatureService.swift
-class NewFeatureService {
-    private let apiClient = APIClient.shared
+protocol NewFeatureServiceProtocol: Sendable {
+    func performAction(_ request: NewFeatureRequest) async throws -> NewFeatureResponse
+}
+
+actor NewFeatureService: NewFeatureServiceProtocol {
+    private let apiClient: APIClientProtocol
+    
+    init(apiClient: APIClientProtocol = APIClient.shared) {
+        self.apiClient = apiClient
+    }
     
     func performAction(_ request: NewFeatureRequest) async throws -> NewFeatureResponse {
         return try await apiClient.post("/api/new-feature", body: request)
@@ -528,15 +592,29 @@ class NewFeatureService {
 4. **Implement ViewModel** (Business logic)
 ```swift
 // ViewModels/NewFeatureViewModel.swift
+@Observable
 @MainActor
-class NewFeatureViewModel: ObservableObject {
-    @Published var isLoading = false
-    @Published var result: String?
+class NewFeatureViewModel {
+    var isLoading = false
+    var result: String?
+    var errorMessage = ""
     
-    private let service = NewFeatureService()
+    private let service: NewFeatureServiceProtocol
+    
+    init(service: NewFeatureServiceProtocol = NewFeatureService()) {
+        self.service = service
+    }
     
     func performAction(parameter: String) async {
-        // Business logic implementation
+        isLoading = true
+        do {
+            let request = NewFeatureRequest(parameter: parameter)
+            let response = try await service.performAction(request)
+            result = response.result
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        isLoading = false
     }
 }
 ```
@@ -545,10 +623,33 @@ class NewFeatureViewModel: ObservableObject {
 ```swift
 // Views/NewFeatureView.swift
 struct NewFeatureView: View {
-    @StateObject private var viewModel = NewFeatureViewModel()
+    @State private var viewModel = NewFeatureViewModel()
+    @State private var inputParameter = ""
     
     var body: some View {
-        // SwiftUI implementation
+        VStack(spacing: 20) {
+            TextField("Enter parameter", text: $inputParameter)
+                .textFieldStyle(.roundedBorder)
+            
+            Button("Perform Action") {
+                Task { await viewModel.performAction(parameter: inputParameter) }
+            }
+            .disabled(viewModel.isLoading)
+            
+            if viewModel.isLoading {
+                ProgressView()
+            }
+            
+            if let result = viewModel.result {
+                Text("Result: \(result)")
+            }
+        }
+        .padding()
+        .alert("Error", isPresented: .constant(!viewModel.errorMessage.isEmpty)) {
+            Button("OK") { viewModel.errorMessage = "" }
+        } message: {
+            Text(viewModel.errorMessage)
+        }
     }
 }
 ```
@@ -576,10 +677,12 @@ Before submitting code, verify:
 
 - [ ] Code is organized by feature, not technical layer
 - [ ] Views only contain SwiftUI UI code
-- [ ] ViewModels handle all business logic
-- [ ] Services only make API calls
+- [ ] ViewModels use @Observable and handle all business logic
+- [ ] Services use actors and protocols for proper concurrency
 - [ ] Models are pure Codable data structures
 - [ ] No direct API calls in Views
-- [ ] Proper async/await usage
+- [ ] Proper async/await usage with Sendable protocols
 - [ ] @MainActor on ViewModels
-- [ ] @StateObject for ViewModel ownership
+- [ ] @State for ViewModel ownership (not @StateObject)
+- [ ] Protocol-based dependency injection for services
+- [ ] Actors for shared mutable state in services

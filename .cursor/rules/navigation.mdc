@@ -1,0 +1,425 @@
+---
+globs: *.swift
+alwaysApply: false
+---
+
+# 🧭 iOS Navigation & Routing Rules
+
+## Navigation Philosophy
+
+This app uses a **simple, centralized navigation pattern** optimized for MVP development. The goal is to enable quick "glueing" of features without the complexity of per-module routers, while maintaining clean separation and extensibility.
+
+## 🎯 Simple App Router Pattern
+
+### Core Navigation Components
+
+```swift
+// ✅ GOOD: Simple centralized router for MVP
+@Observable
+@MainActor
+class AppRouter {
+    var path = NavigationPath()
+    var presentedSheet: Sheet?
+    var presentedFullScreenCover: FullScreenCover?
+    
+    // Route to feature entry points
+    func navigateToTransactions() {
+        path.append(Route.transactions)
+    }
+    
+    func navigateToAccounts() {
+        path.append(Route.accounts)
+    }
+    
+    func navigateToTransactionDetail(_ transaction: Transaction) {
+        path.append(Route.transactionDetail(transaction))
+    }
+    
+    // Sheet presentations
+    func presentAccountLinking() {
+        presentedSheet = .accountLinking
+    }
+    
+    func presentSettings() {
+        presentedSheet = .settings
+    }
+    
+    // Navigation utilities
+    func goBack() {
+        guard !path.isEmpty else { return }
+        path.removeLast()
+    }
+    
+    func popToRoot() {
+        path = NavigationPath()
+    }
+    
+    func dismissSheet() {
+        presentedSheet = nil
+    }
+}
+
+// Route definitions
+enum Route: Hashable {
+    case transactions
+    case accounts
+    case transactionDetail(Transaction)
+    case accountDetail(Account)
+    case profile
+    case notifications
+}
+
+// Sheet presentations
+enum Sheet: String, CaseIterable {
+    case accountLinking
+    case settings
+    case transactionFilter
+    case addTransaction
+}
+
+// Full screen covers
+enum FullScreenCover: String, CaseIterable {
+    case onboarding
+    case plaidLink
+}
+```
+
+### Root App Structure
+
+```swift
+// ✅ GOOD: Main app with centralized navigation
+@main
+struct MoneyAppApp: App {
+    @State private var appRouter = AppRouter()
+    @State private var authManager = AuthManager()
+    
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+                .environment(appRouter)
+                .environment(authManager)
+        }
+    }
+}
+
+struct ContentView: View {
+    @Environment(AppRouter.self) private var router
+    @Environment(AuthManager.self) private var authManager
+    
+    var body: some View {
+        NavigationStack(path: $router.path) {
+            if authManager.isAuthenticated {
+                MainTabView()
+                    .navigationDestination(for: Route.self) { route in
+                        FeatureViewFactory.view(for: route)
+                    }
+            } else {
+                AuthenticationView()
+            }
+        }
+        .sheet(item: $router.presentedSheet) { sheet in
+            FeatureViewFactory.sheet(for: sheet)
+        }
+        .fullScreenCover(item: $router.presentedFullScreenCover) { cover in
+            FeatureViewFactory.fullScreenCover(for: cover)
+        }
+    }
+}
+```
+
+### Feature View Factory
+
+```swift
+// ✅ GOOD: Simple factory for feature views
+struct FeatureViewFactory {
+    static func view(for route: Route) -> some View {
+        switch route {
+        case .transactions:
+            TransactionListView()
+        case .accounts:
+            AccountListView()
+        case .transactionDetail(let transaction):
+            TransactionDetailView(transaction: transaction)
+        case .accountDetail(let account):
+            AccountDetailView(account: account)
+        case .profile:
+            ProfileView()
+        case .notifications:
+            NotificationSettingsView()
+        }
+    }
+    
+    static func sheet(for sheet: Sheet) -> some View {
+        switch sheet {
+        case .accountLinking:
+            PlaidLinkView()
+        case .settings:
+            SettingsView()
+        case .transactionFilter:
+            TransactionFilterView()
+        case .addTransaction:
+            AddTransactionView()
+        }
+    }
+    
+    static func fullScreenCover(for cover: FullScreenCover) -> some View {
+        switch cover {
+        case .onboarding:
+            OnboardingView()
+        case .plaidLink:
+            PlaidLinkFlowView()
+        }
+    }
+}
+```
+
+## 📱 Tab-Based Navigation
+
+### Main Tab Structure
+
+```swift
+// ✅ GOOD: Main tab view with router integration
+struct MainTabView: View {
+    @Environment(AppRouter.self) private var router
+    
+    var body: some View {
+        TabView {
+            TransactionListView()
+                .tabItem {
+                    Label("Transactions", systemImage: "list.bullet.rectangle")
+                }
+                .tag(0)
+            
+            AccountListView()
+                .tabItem {
+                    Label("Accounts", systemImage: "creditcard")
+                }
+                .tag(1)
+            
+            SpendingSummaryView()
+                .tabItem {
+                    Label("Analytics", systemImage: "chart.pie")
+                }
+                .tag(2)
+            
+            ProfileView()
+                .tabItem {
+                    Label("Profile", systemImage: "person.circle")
+                }
+                .tag(3)
+        }
+    }
+}
+```
+
+## 🔄 Feature Integration Patterns
+
+### How Features Trigger Navigation
+
+```swift
+// ✅ GOOD: ViewModels can trigger navigation via router
+@Observable
+@MainActor
+class TransactionListViewModel {
+    var transactions: [Transaction] = []
+    
+    private let transactionService: TransactionServiceProtocol
+    private let router: AppRouter
+    
+    init(transactionService: TransactionServiceProtocol = TransactionService(),
+         router: AppRouter) {
+        self.transactionService = transactionService
+        self.router = router
+    }
+    
+    func viewTransactionDetail(_ transaction: Transaction) {
+        router.navigateToTransactionDetail(transaction)
+    }
+    
+    func showFilterOptions() {
+        router.presentedSheet = .transactionFilter
+    }
+}
+
+// Views get router from environment
+struct TransactionListView: View {
+    @Environment(AppRouter.self) private var router
+    @State private var viewModel: TransactionListViewModel
+    
+    init() {
+        // Note: We'll inject router in onAppear or via factory
+        self._viewModel = State(initialValue: TransactionListViewModel(router: AppRouter()))
+    }
+    
+    var body: some View {
+        List(viewModel.transactions) { transaction in
+            Button {
+                viewModel.viewTransactionDetail(transaction)
+            } label: {
+                TransactionRow(transaction: transaction)
+            }
+        }
+        .onAppear {
+            // Inject router from environment
+            viewModel = TransactionListViewModel(router: router)
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Filter") {
+                    viewModel.showFilterOptions()
+                }
+            }
+        }
+    }
+}
+```
+
+### Simplified Feature Factories
+
+```swift
+// ✅ GOOD: Each feature provides a simple factory method
+extension TransactionListView {
+    static func make() -> TransactionListView {
+        TransactionListView()
+    }
+}
+
+extension AccountListView {
+    static func make() -> AccountListView {
+        AccountListView()
+    }
+}
+
+// For views that need configuration
+extension TransactionDetailView {
+    static func make(transaction: Transaction) -> TransactionDetailView {
+        TransactionDetailView(transaction: transaction)
+    }
+}
+```
+
+## 🎭 Deep Linking Support
+
+### URL-Based Navigation
+
+```swift
+// ✅ GOOD: Simple deep linking for future extensibility
+extension AppRouter {
+    func navigate(to url: URL) {
+        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+              let path = components.path.split(separator: "/").first else { return }
+        
+        switch path {
+        case "transactions":
+            navigateToTransactions()
+        case "accounts":
+            navigateToAccounts()
+        case "profile":
+            self.path.append(Route.profile)
+        default:
+            break
+        }
+    }
+}
+
+// Usage in app delegate or scene delegate
+func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+    // AppRouter.shared.navigate(to: url)
+    return true
+}
+```
+
+## 🧪 Testing Navigation
+
+### Mock Router for Testing
+
+```swift
+// ✅ GOOD: Mock router for testing
+class MockAppRouter: AppRouter {
+    var navigationCalls: [Route] = []
+    var sheetPresentations: [Sheet] = []
+    
+    override func navigateToTransactions() {
+        navigationCalls.append(.transactions)
+    }
+    
+    override func presentAccountLinking() {
+        sheetPresentations.append(.accountLinking)
+    }
+}
+
+// Test usage
+func testTransactionListNavigation() {
+    let mockRouter = MockAppRouter()
+    let viewModel = TransactionListViewModel(router: mockRouter)
+    let transaction = Transaction.sample
+    
+    viewModel.viewTransactionDetail(transaction)
+    
+    XCTAssertEqual(mockRouter.navigationCalls.count, 1)
+    XCTAssertEqual(mockRouter.navigationCalls.first, .transactionDetail(transaction))
+}
+```
+
+## 📋 Navigation Best Practices
+
+### DO's ✅
+
+- **Use centralized AppRouter**: Single source of truth for navigation state
+- **Inject router via environment**: Clean dependency injection pattern
+- **Keep routes simple**: Enum-based routing for type safety
+- **Use sheet/fullScreenCover modifiers**: Native SwiftUI presentation patterns
+- **Test navigation flows**: Mock router for unit testing
+- **Feature factory methods**: Simple `.make()` methods for creating views
+
+### DON'Ts ❌
+
+- **Don't create per-feature routers**: Overkill for MVP app
+- **Don't hardcode navigation**: Always use router for navigation
+- **Don't pass router through initializers**: Use environment injection
+- **Don't create complex route hierarchies**: Keep flat and simple
+- **Don't forget accessibility**: Ensure navigation is accessible
+
+## 🎯 MVP Navigation Pattern Summary
+
+This navigation pattern provides:
+
+- **🚀 Fast Development**: Quick navigation between features
+- **🔧 Easy Testing**: Mock router for unit tests
+- **📱 Native Feel**: Uses SwiftUI NavigationStack and modifiers
+- **🎪 Extensible**: Easy to add new routes and features
+- **🧪 Testable**: Clear navigation contracts for testing
+
+### Quick Implementation Checklist
+
+- [ ] Create AppRouter with NavigationPath
+- [ ] Define Route enum for all destinations
+- [ ] Create FeatureViewFactory for view creation
+- [ ] Set up main NavigationStack with router
+- [ ] Inject router via environment
+- [ ] Use router in ViewModels for navigation
+- [ ] Create mock router for testing
+
+## 📚 Navigation Quick Reference
+
+```swift
+// Navigate to feature
+router.navigateToTransactions()
+
+// Navigate with data
+router.navigateToTransactionDetail(transaction)
+
+// Present sheet
+router.presentedSheet = .accountLinking
+
+// Navigate back
+router.goBack()
+
+// Pop to root
+router.popToRoot()
+
+// Dismiss sheet
+router.dismissSheet()
+```
+
+This simple pattern enables rapid feature development while maintaining clean architecture and testability for our MVP app! 🎉

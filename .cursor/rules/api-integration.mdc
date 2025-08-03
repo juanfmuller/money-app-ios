@@ -1,3 +1,8 @@
+---
+globs: *.swift
+alwaysApply: false
+---
+
 # 🔗 iOS API Integration Rules
 
 ## API Integration Philosophy
@@ -188,12 +193,26 @@ class APIClient {
 }
 ```
 
-### Feature-Specific Services
+### Feature-Specific Services with Actor Pattern
 
 ```swift
-// ✅ GOOD: Authentication service matching backend endpoints
-class AuthService {
-    private let apiClient = APIClient.shared
+// ✅ GOOD: Protocol-based authentication service with actor
+protocol AuthServiceProtocol: Sendable {
+    func register(_ request: RegisterRequest) async throws -> AuthResponse
+    func login(_ request: LoginRequest) async throws -> AuthResponse
+    func updateDeviceToken(_ token: String) async throws
+    func logout() async throws
+}
+
+actor AuthService: AuthServiceProtocol {
+    private let apiClient: APIClientProtocol
+    private let tokenManager: TokenManagerProtocol
+    
+    init(apiClient: APIClientProtocol = APIClient.shared,
+         tokenManager: TokenManagerProtocol = TokenManager.shared) {
+        self.apiClient = apiClient
+        self.tokenManager = tokenManager
+    }
     
     func register(_ request: RegisterRequest) async throws -> AuthResponse {
         return try await apiClient.post("/api/auth/register", body: request)
@@ -203,7 +222,7 @@ class AuthService {
         let response: AuthResponse = try await apiClient.post("/api/auth/login", body: request)
         
         // Store JWT token for future requests
-        TokenManager.shared.saveTokens(
+        await tokenManager.saveTokens(
             accessToken: response.accessToken,
             refreshToken: response.refreshToken
         )
@@ -218,16 +237,28 @@ class AuthService {
     
     func logout() async throws {
         // Clear local tokens
-        TokenManager.shared.clearTokens()
+        await tokenManager.clearTokens()
         
         // Optionally notify backend (if endpoint exists)
         // let _: SuccessResponse = try await apiClient.post("/api/auth/logout")
     }
 }
 
-// ✅ GOOD: Account service for Plaid integration
-class AccountService {
-    private let apiClient = APIClient.shared
+// ✅ GOOD: Protocol-based account service with actor
+protocol AccountServiceProtocol: Sendable {
+    func createLinkToken() async throws -> LinkTokenResponse
+    func exchangePublicToken(_ publicToken: String) async throws -> ExchangeResponse
+    func getAccounts() async throws -> AccountListResponse
+    func syncAccounts() async throws -> SyncResponse
+    func getSyncStatus() async throws -> SyncStatusResponse
+}
+
+actor AccountService: AccountServiceProtocol {
+    private let apiClient: APIClientProtocol
+    
+    init(apiClient: APIClientProtocol = APIClient.shared) {
+        self.apiClient = apiClient
+    }
     
     func createLinkToken() async throws -> LinkTokenResponse {
         let request = LinkTokenRequest(products: ["transactions"])
@@ -252,9 +283,20 @@ class AccountService {
     }
 }
 
-// ✅ GOOD: Transaction service with polling optimization
-class TransactionService {
-    private let apiClient = APIClient.shared
+// ✅ GOOD: Protocol-based transaction service with actor
+protocol TransactionServiceProtocol: Sendable {
+    func getTransactions(limit: Int, offset: Int, startDate: Date?, endDate: Date?, category: String?) async throws -> TransactionListResponse
+    func getRecentTransactions(since: Date?) async throws -> RecentTransactionsResponse
+    func getSpendingSummary(startDate: Date, endDate: Date) async throws -> SpendingSummaryResponse
+    func getCategories() async throws -> CategoriesResponse
+}
+
+actor TransactionService: TransactionServiceProtocol {
+    private let apiClient: APIClientProtocol
+    
+    init(apiClient: APIClientProtocol = APIClient.shared) {
+        self.apiClient = apiClient
+    }
     
     func getTransactions(
         limit: Int = 50,
@@ -312,19 +354,26 @@ class TransactionService {
 ### Automatic Background Polling
 
 ```swift
-// ✅ GOOD: Polling manager for background data updates
+// ✅ GOOD: Polling manager with @Observable for background data updates
+@Observable
 @MainActor
-class PollingManager: ObservableObject {
+class PollingManager {
     static let shared = PollingManager()
     
-    @Published var isPolling = false
+    var isPolling = false
     
     private var pollingTask: Task<Void, Never>?
     private let syncStatusInterval: TimeInterval = 180 // 3 minutes
     private let transactionInterval: TimeInterval = 120 // 2 minutes
     
-    private let accountService = AccountService()
-    private let transactionService = TransactionService()
+    private let accountService: AccountServiceProtocol
+    private let transactionService: TransactionServiceProtocol
+    
+    init(accountService: AccountServiceProtocol = AccountService(),
+         transactionService: TransactionServiceProtocol = TransactionService()) {
+        self.accountService = accountService
+        self.transactionService = transactionService
+    }
     
     func startPolling() {
         guard !isPolling else { return }
@@ -389,17 +438,20 @@ extension Notification.Name {
 ### ViewModel Polling Integration
 
 ```swift
-// ✅ GOOD: ViewModel that responds to polling updates
+// ✅ GOOD: ViewModel with @Observable that responds to polling updates
+@Observable
 @MainActor
-class TransactionListViewModel: ObservableObject {
-    @Published var transactions: [Transaction] = []
-    @Published var isLoading = false
-    @Published var lastUpdated: Date?
+class TransactionListViewModel {
+    var transactions: [Transaction] = []
+    var isLoading = false
+    var lastUpdated: Date?
+    var errorMessage = ""
     
-    private let transactionService = TransactionService()
+    private let transactionService: TransactionServiceProtocol
     private var cancellables = Set<AnyCancellable>()
     
-    init() {
+    init(transactionService: TransactionServiceProtocol = TransactionService()) {
+        self.transactionService = transactionService
         setupPollingObservers()
     }
     
@@ -422,13 +474,14 @@ class TransactionListViewModel: ObservableObject {
     
     func loadTransactions() async {
         isLoading = true
+        errorMessage = ""
         
         do {
-            let response = try await transactionService.getTransactions()
+            let response = try await transactionService.getTransactions(limit: 50, offset: 0, startDate: nil, endDate: nil, category: nil)
             transactions = response.transactions
             lastUpdated = Date()
         } catch {
-            // Handle error
+            errorMessage = error.localizedDescription
         }
         
         isLoading = false
@@ -437,11 +490,12 @@ class TransactionListViewModel: ObservableObject {
     func refreshTransactions() async {
         // Silent refresh without loading indicator
         do {
-            let response = try await transactionService.getTransactions()
+            let response = try await transactionService.getTransactions(limit: 50, offset: 0, startDate: nil, endDate: nil, category: nil)
             transactions = response.transactions
             lastUpdated = Date()
         } catch {
             // Handle error silently in background refresh
+            print("Background refresh error: \(error)")
         }
     }
     
@@ -700,36 +754,48 @@ struct SuccessResponse: Codable {
 ## 🔐 Token Management
 
 ```swift
-// ✅ GOOD: Secure token management with Keychain
-class TokenManager {
+// ✅ GOOD: Actor-based secure token management with Keychain
+protocol TokenManagerProtocol: Sendable {
+    func saveTokens(accessToken: String, refreshToken: String?) async
+    func getAccessToken() async -> String?
+    func getRefreshToken() async -> String?
+    func clearTokens() async
+    func isAuthenticated() async -> Bool
+}
+
+actor TokenManager: TokenManagerProtocol {
     static let shared = TokenManager()
     
-    private let keychainService = KeychainService.shared
+    private let keychainService: KeychainServiceProtocol
     private let accessTokenKey = "access_token"
     private let refreshTokenKey = "refresh_token"
     
-    func saveTokens(accessToken: String, refreshToken: String?) {
-        keychainService.save(accessToken, for: accessTokenKey)
+    init(keychainService: KeychainServiceProtocol = KeychainService.shared) {
+        self.keychainService = keychainService
+    }
+    
+    func saveTokens(accessToken: String, refreshToken: String?) async {
+        await keychainService.save(accessToken, for: accessTokenKey)
         if let refreshToken = refreshToken {
-            keychainService.save(refreshToken, for: refreshTokenKey)
+            await keychainService.save(refreshToken, for: refreshTokenKey)
         }
     }
     
-    func getAccessToken() -> String? {
-        return keychainService.get(accessTokenKey)
+    func getAccessToken() async -> String? {
+        return await keychainService.get(accessTokenKey)
     }
     
-    func getRefreshToken() -> String? {
-        return keychainService.get(refreshTokenKey)
+    func getRefreshToken() async -> String? {
+        return await keychainService.get(refreshTokenKey)
     }
     
-    func clearTokens() {
-        keychainService.delete(accessTokenKey)
-        keychainService.delete(refreshTokenKey)
+    func clearTokens() async {
+        await keychainService.delete(accessTokenKey)
+        await keychainService.delete(refreshTokenKey)
     }
     
-    var isAuthenticated: Bool {
-        return getAccessToken() != nil
+    func isAuthenticated() async -> Bool {
+        return await getAccessToken() != nil
     }
 }
 ```
@@ -788,15 +854,19 @@ struct MoneyAppApp: App {
 ### Mock Services for Testing
 
 ```swift
-// ✅ GOOD: Mock service for testing
-class MockTransactionService: TransactionServiceProtocol {
+// ✅ GOOD: Mock actor service for testing with Sendable compliance
+actor MockTransactionService: TransactionServiceProtocol {
     var getTransactionsResult: Result<TransactionListResponse, Error> = .success(TransactionListResponse.sample)
     var getRecentTransactionsResult: Result<RecentTransactionsResponse, Error> = .success(RecentTransactionsResponse.sample)
+    var getSpendingSummaryResult: Result<SpendingSummaryResponse, Error> = .success(SpendingSummaryResponse.sample)
+    var getCategoriesResult: Result<CategoriesResponse, Error> = .success(CategoriesResponse.sample)
     
     var getTransactionsCallCount = 0
     var getRecentTransactionsCallCount = 0
+    var getSpendingSummaryCallCount = 0
+    var getCategoriesCallCount = 0
     
-    func getTransactions(limit: Int, offset: Int, startDate: Date?, endDate: Date?, category: String?) async throws -> TransactionListResponse {
+    func getTransactions(limit: Int = 50, offset: Int = 0, startDate: Date? = nil, endDate: Date? = nil, category: String? = nil) async throws -> TransactionListResponse {
         getTransactionsCallCount += 1
         
         switch getTransactionsResult {
@@ -807,7 +877,7 @@ class MockTransactionService: TransactionServiceProtocol {
         }
     }
     
-    func getRecentTransactions(since: Date?) async throws -> RecentTransactionsResponse {
+    func getRecentTransactions(since: Date? = nil) async throws -> RecentTransactionsResponse {
         getRecentTransactionsCallCount += 1
         
         switch getRecentTransactionsResult {
@@ -817,15 +887,29 @@ class MockTransactionService: TransactionServiceProtocol {
             throw error
         }
     }
+    
+    func getSpendingSummary(startDate: Date, endDate: Date) async throws -> SpendingSummaryResponse {
+        getSpendingSummaryCallCount += 1
+        
+        switch getSpendingSummaryResult {
+        case .success(let response):
+            return response
+        case .failure(let error):
+            throw error
+        }
+    }
+    
+    func getCategories() async throws -> CategoriesResponse {
+        getCategoriesCallCount += 1
+        
+        switch getCategoriesResult {
+        case .success(let response):
+            return response
+        case .failure(let error):
+            throw error
+        }
+    }
 }
-
-// Protocol for dependency injection
-protocol TransactionServiceProtocol {
-    func getTransactions(limit: Int, offset: Int, startDate: Date?, endDate: Date?, category: String?) async throws -> TransactionListResponse
-    func getRecentTransactions(since: Date?) async throws -> RecentTransactionsResponse
-}
-
-extension TransactionService: TransactionServiceProtocol {}
 ```
 
 ### API Integration Tests

@@ -1,3 +1,8 @@
+---
+globs: *.swift
+alwaysApply: false
+---
+
 # 🔐 iOS Security Rules
 
 ## Security Philosophy

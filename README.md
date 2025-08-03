@@ -17,11 +17,11 @@ Money App iOS is the mobile client for a personal finance management system. Use
 
 ## 🏗️ Architecture
 
-### MVVM + SwiftUI
-- **Views**: SwiftUI components focused purely on UI presentation
-- **ViewModels**: `@ObservableObject` classes containing business logic and state management
+### Modern MVVM + Swift 6
+- **Views**: SwiftUI components with `@State` for ViewModel ownership
+- **ViewModels**: `@Observable` classes (Swift 6) containing business logic and state management
 - **Models**: `Codable` data structures matching backend API schemas
-- **Services**: API communication and networking layer
+- **Services**: Actor-based API communication with protocol injection for testing
 
 ### Feature-Based Organization
 ```
@@ -38,8 +38,9 @@ MoneyApp/
 
 ### Data Strategy
 - **No Caching**: Fresh data fetched on demand for simplicity
-- **Polling-Based**: Background polling for transaction updates when app is active
-- **Secure Storage**: JWT tokens and sensitive data stored in iOS Keychain
+- **Polling-Based**: Background polling with `@Observable` ViewModels for transaction updates
+- **Secure Storage**: JWT tokens managed by actor-based TokenManager in iOS Keychain
+- **Concurrency Safety**: Actor-based services prevent race conditions
 
 ## 🔗 Backend Integration
 
@@ -73,9 +74,10 @@ GET /api/transactions/summary   // Get spending analytics
 ## 🛠️ Technology Stack
 
 ### Core Technologies
-- **SwiftUI**: Declarative UI framework
-- **Swift Concurrency**: Modern async/await patterns
-- **Combine**: Reactive programming for data binding
+- **SwiftUI**: Declarative UI framework with Swift 6 @Observable
+- **Swift 6**: Latest language version with enhanced concurrency
+- **Swift Concurrency**: Modern async/await patterns with actors
+- **Combine**: Reactive programming for notification handling
 - **Foundation**: Core iOS networking and data handling
 
 ### Key Dependencies
@@ -126,7 +128,32 @@ Cmd+B  # Build (must succeed)
 Cmd+U  # Run tests (must pass)
 ```
 
+**Key Patterns:**
+- Use `@Observable` for ViewModels (not `@ObservableObject`)
+- Use `@State` for ViewModel ownership (not `@StateObject`)
+- Implement services as actors with protocol injection
+- Use `AppRouter` for navigation between features
+
 See [Development Workflow Rules](.cursor/rules/development-workflow.md) for detailed guidelines.
+
+## 🧭 Navigation Architecture
+
+### Simple AppRouter Pattern
+- **Centralized Navigation**: Single `AppRouter` manages all navigation state
+- **Type-Safe Routing**: Enum-based routes for compile-time safety
+- **Environment Injection**: Router passed via SwiftUI environment
+- **Quick Feature Integration**: Simple view factories for rapid development
+
+```swift
+// Navigate between features
+router.navigateToTransactions()
+router.navigateToTransactionDetail(transaction)
+
+// Present sheets and modals
+router.presentedSheet = .accountLinking
+```
+
+See [Navigation Rules](.cursor/rules/navigation.md) for the complete routing strategy.
 
 ## 📋 Project Structure
 
@@ -217,16 +244,19 @@ Cmd+6                 # Open test navigator
 ## 📚 Development Resources
 
 ### Documentation
-- [Architecture Rules](.cursor/rules/architecture.md) - MVVM patterns and organization
+- [Architecture Rules](.cursor/rules/architecture.md) - Modern MVVM with Swift 6 @Observable
+- [Navigation Rules](.cursor/rules/navigation.md) - Simple AppRouter navigation pattern
 - [Testing Guidelines](.cursor/rules/testing.md) - Testing strategies and patterns
-- [API Integration](.cursor/rules/api-integration.md) - Backend communication patterns
+- [API Integration](.cursor/rules/api-integration.md) - Actor-based backend communication
 - [Security Rules](.cursor/rules/security.md) - Security implementation guidelines
 - [Error Handling](.cursor/rules/error-handling.md) - Error management patterns
 
 ### Code Style
-- **SwiftUI Conventions**: Declarative view patterns
-- **Async/Await**: Modern concurrency patterns
-- **MVVM Separation**: Clear layer responsibilities
+- **Swift 6 @Observable**: Modern state management without boilerplate
+- **Actor-Based Services**: Concurrency-safe API communication
+- **Protocol Injection**: Testable dependency patterns
+- **SwiftUI Conventions**: Declarative view patterns with @State
+- **AppRouter Navigation**: Centralized, type-safe routing
 - **Feature Organization**: Domain-driven structure
 
 ## 🚀 Deployment
@@ -250,7 +280,11 @@ Cmd+6                 # Open test navigator
 ## 📞 Support & Development
 
 ### Architecture Decisions
-This iOS app implements a **polling-based architecture** for simplicity:
+This iOS app implements a **modern polling-based architecture** with Swift 6:
+- ✅ Swift 6 @Observable reduces boilerplate significantly
+- ✅ Actor-based services prevent race conditions
+- ✅ Protocol injection makes testing effortless
+- ✅ Simple AppRouter enables quick feature "glueing"
 - ✅ No complex caching or state management
 - ✅ Always fresh data from backend
 - ✅ Easy to debug and maintain
@@ -259,8 +293,10 @@ This iOS app implements a **polling-based architecture** for simplicity:
 ### Contributing
 1. Follow [Development Workflow](.cursor/rules/development-workflow.md)
 2. Ensure all tests pass before committing
-3. Maintain MVVM architecture patterns
-4. Update documentation for new features
+3. Use Swift 6 @Observable for ViewModels
+4. Implement services as actors with protocols
+5. Use AppRouter for navigation
+6. Update documentation for new features
 
 ## 📄 License
 
@@ -268,4 +304,4 @@ This project is part of the Money App financial management system.
 
 ---
 
-**Built with ❤️ using SwiftUI and modern iOS development practices**
+**Built with ❤️ using Swift 6, SwiftUI, and cutting-edge iOS development practices**

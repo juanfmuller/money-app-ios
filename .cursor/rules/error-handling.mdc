@@ -1,3 +1,8 @@
+---
+globs: *.swift
+alwaysApply: false
+---
+
 # 🚨 iOS Error Handling Rules
 
 ## Error Handling Philosophy
