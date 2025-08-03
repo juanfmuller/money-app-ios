@@ -1,0 +1,234 @@
+# iOS .gitignore
+
+# Xcode
+#
+# gitignore contributors: remember to update Global/Xcode.gitignore, Objective-C.gitignore & Swift.gitignore
+
+## User settings
+xcuserdata/
+
+## Compatibility with Xcode 8 and earlier (ignoring not required starting Xcode 9)
+*.xcscmblueprint
+*.xccheckout
+
+## Compatibility with Xcode 3 and earlier (ignoring not required starting Xcode 4)
+build/
+DerivedData/
+*.moved-aside
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+
+## Obj-C/Swift specific
+*.hmap
+
+## App packaging
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+## Playgrounds
+timeline.xctimeline
+playground.xcworkspace
+
+# Swift Package Manager
+#
+# Add this line if you want to avoid checking in source code from Swift Package Manager dependencies.
+# Packages/
+# Package.pins
+# Package.resolved
+# *.xcodeproj
+#
+# Xcode automatically generates this directory with a .gitignore file and xcuserdata
+# hence it is not needed unless you have added a package configuration file to your project
+# .swiftpm
+
+.swiftpm/config/registries.json
+.swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
+.netrc
+
+# CocoaPods
+#
+# We recommend against adding the Pods directory to your .gitignore. However
+# you should judge for yourself, the pros and cons are mentioned at:
+# https://guides.cocoapods.org/using/using-cocoapods.html#should-i-check-the-pods-directory-into-source-control
+#
+# Pods/
+#
+# Add this line if you want to avoid checking in source code from the Xcode workspace
+# *.xcworkspace
+
+# Carthage
+#
+# Add this line if you want to avoid checking in source code from Carthage dependencies.
+# Carthage/Checkouts
+
+Carthage/Build/
+
+# Accio dependency management
+Dependencies/
+.accio/
+
+# fastlane
+#
+# It is recommended to not store the screenshots in the git repo.
+# Instead, use fastlane to re-generate the screenshots whenever they are needed.
+# For more information about the recommended setup visit:
+# https://docs.fastlane.tools/best-practices/source-control/
+
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+# Code Injection
+#
+# After new code Injection tools there's a generated folder /iOSInjectionProject
+# https://github.com/johnno1962/injectionforxcode
+
+iOSInjectionProject/
+
+# Xcode Cloud
+#
+*.xcresult
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# App specific
+#
+# Configuration files with secrets
+Config.plist
+config.plist
+*-Config.plist
+*.xcconfig
+GoogleService-Info.plist
+
+# API Keys and secrets (if stored in separate files)
+APIKeys.plist
+Secrets.plist
+secrets.json
+
+# Provisioning profiles
+*.mobileprovision
+*.provisionprofile
+
+# Certificates (should not be in repo)
+*.p12
+*.cer
+*.certSigningRequest
+
+# Archives
+*.xcarchive
+
+# Simulator logs
+simulator_logs/
+
+# Test results
+test_output/
+test-reports/
+*.coverage
+*.profraw
+
+# Documentation generated files
+docs/
+Documentation/
+
+# IDE specific files
+.vscode/
+.idea/
+
+# Backup files
+*.backup
+*.bak
+*.orig
+
+# Log files
+*.log
+logs/
+
+# Cache directories
+Cache/
+Caches/
+
+# Build artifacts
+build/
+Build/
+*.app
+*.framework
+
+# Swift intermediate files
+*.swiftdeps
+*.swift-dependencies
+*.o
+
+# Debugging symbols
+*.dSYM/
+
+# Memory dumps
+*.memgraph
+
+# SwiftLint
+.swiftlint.yml.bak
+
+# Sourcery
+.sourcery/
+
+# R.swift
+*.generated.swift
+
+# Realm
+*.realm
+*.realm.lock
+
+# Firebase
+firebase_app_id_file.json
+
+# Instruments
+*.trace
+
+# Profiling
+*.gcdump
+*.heapshot
+
+# Localization
+*.strings.bak
+
+# Asset catalog compiled resources
+*.car
+
+# Core Data
+*.mom
+*.momd
+*.omo
+
+# App Store Connect API
+AuthKey_*.p8
+
+# Metadata
+iTunesMetadata.plist
+
+# App thinning
+*.thinning_manifest
+
+# Xcode workspace (if using CocoaPods)
+# *.xcworkspace
+
+# SPM Package.resolved (if not tracking exact versions)
+Package.resolved

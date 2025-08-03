@@ -1,0 +1,756 @@
+# 🧪 iOS Testing Rules
+
+## Testing Philosophy
+
+This iOS app follows a **comprehensive testing strategy** with unit tests for ViewModels and Services, plus UI tests for critical user flows. Tests are organized by feature and follow TDD principles.
+
+## 📁 Test Organization Structure
+
+```
+MoneyAppTests/
+├── Features/                   # Feature-specific tests
+│   ├── Auth/
+│   │   ├── ViewModels/
+│   │   │   ├── LoginViewModelTests.swift
+│   │   │   ├── RegisterViewModelTests.swift
+│   │   │   └── ProfileViewModelTests.swift
+│   │   ├── Services/
+│   │   │   └── AuthServiceTests.swift
+│   │   └── Models/
+│   │       └── UserTests.swift
+│   │
+│   ├── Accounts/
+│   │   ├── ViewModels/
+│   │   │   ├── AccountListViewModelTests.swift
+│   │   │   └── PlaidLinkViewModelTests.swift
+│   │   └── Services/
+│   │       └── AccountServiceTests.swift
+│   │
+│   ├── Transactions/
+│   │   ├── ViewModels/
+│   │   │   ├── TransactionListViewModelTests.swift
+│   │   │   └── SpendingSummaryViewModelTests.swift
+│   │   └── Services/
+│   │       └── TransactionServiceTests.swift
+│   │
+│   └── Notifications/
+│       ├── ViewModels/
+│       │   └── NotificationSettingsViewModelTests.swift
+│       └── Services/
+│           └── NotificationServiceTests.swift
+│
+├── Shared/                     # Shared component tests
+│   ├── Services/
+│   │   ├── APIClientTests.swift
+│   │   └── KeychainServiceTests.swift
+│   └── Models/
+│       └── APIResponseTests.swift
+│
+└── TestHelpers/                # Test utilities
+    ├── MockServices/
+    │   ├── MockAuthService.swift
+    │   ├── MockAccountService.swift
+    │   └── MockTransactionService.swift
+    ├── TestData/
+    │   ├── SampleUsers.swift
+    │   ├── SampleTransactions.swift
+    │   └── SampleAccounts.swift
+    └── Extensions/
+        └── XCTestCase+Helpers.swift
+
+MoneyAppUITests/
+├── Features/
+│   ├── AuthUITests.swift
+│   ├── AccountsUITests.swift
+│   └── TransactionsUITests.swift
+└── TestHelpers/
+    ├── UITestHelpers.swift
+    └── MockAPIServer.swift
+```
+
+## 🎯 Testing Layers & Responsibilities
+
+### 1. ViewModel Tests (Primary Focus)
+
+**Purpose**: Test business logic and state management
+
+**✅ Test These Scenarios:**
+- State changes (@Published properties)
+- Business logic validation
+- Error handling and error messages
+- Loading states
+- Data transformation for UI
+- User input validation
+- Integration with Services (mocked)
+
+```swift
+// ✅ GOOD: Comprehensive ViewModel test
+@MainActor
+class LoginViewModelTests: XCTestCase {
+    private var viewModel: LoginViewModel!
+    private var mockAuthService: MockAuthService!
+    
+    override func setUp() {
+        super.setUp()
+        mockAuthService = MockAuthService()
+        viewModel = LoginViewModel(authService: mockAuthService)
+    }
+    
+    override func tearDown() {
+        viewModel = nil
+        mockAuthService = nil
+        super.tearDown()
+    }
+    
+    // Test successful login flow
+    func testLogin_Success() async {
+        // Given
+        viewModel.email = "test@example.com"
+        viewModel.password = "password123"
+        mockAuthService.loginResult = .success(AuthResponse.sample)
+        
+        // When
+        await viewModel.login()
+        
+        // Then
+        XCTAssertFalse(viewModel.isLoading)
+        XCTAssertFalse(viewModel.showError)
+        XCTAssertTrue(viewModel.isAuthenticated)
+    }
+    
+    // Test error handling
+    func testLogin_InvalidCredentials() async {
+        // Given
+        viewModel.email = "wrong@example.com"
+        viewModel.password = "wrongpassword"
+        mockAuthService.loginResult = .failure(APIError.unauthorized)
+        
+        // When
+        await viewModel.login()
+        
+        // Then
+        XCTAssertFalse(viewModel.isLoading)
+        XCTAssertTrue(viewModel.showError)
+        XCTAssertEqual(viewModel.errorMessage, "Invalid email or password")
+        XCTAssertFalse(viewModel.isAuthenticated)
+    }
+    
+    // Test input validation
+    func testLogin_EmptyEmail() async {
+        // Given
+        viewModel.email = ""
+        viewModel.password = "password123"
+        
+        // When
+        await viewModel.login()
+        
+        // Then
+        XCTAssertTrue(viewModel.showError)
+        XCTAssertEqual(viewModel.errorMessage, "Please enter a valid email address")
+        XCTAssertEqual(mockAuthService.loginCallCount, 0) // Service not called
+    }
+    
+    // Test loading state
+    func testLogin_LoadingState() async {
+        // Given
+        viewModel.email = "test@example.com"
+        viewModel.password = "password123"
+        mockAuthService.loginDelay = 1.0
+        
+        // When
+        let loginTask = Task { await viewModel.login() }
+        
+        // Then (while loading)
+        XCTAssertTrue(viewModel.isLoading)
+        
+        await loginTask.value
+        XCTAssertFalse(viewModel.isLoading)
+    }
+}
+```
+
+### 2. Service Tests
+
+**Purpose**: Test API integration and networking logic
+
+**✅ Test These Scenarios:**
+- HTTP request construction
+- Response parsing
+- Error handling (network, HTTP, parsing)
+- Authentication header inclusion
+- Retry mechanisms
+
+```swift
+// ✅ GOOD: Service test with URLSession mocking
+class AuthServiceTests: XCTestCase {
+    private var authService: AuthService!
+    private var mockURLSession: MockURLSession!
+    
+    override func setUp() {
+        super.setUp()
+        mockURLSession = MockURLSession()
+        authService = AuthService(urlSession: mockURLSession)
+    }
+    
+    func testLogin_Success() async throws {
+        // Given
+        let request = LoginRequest(email: "test@example.com", password: "password123")
+        let expectedResponse = AuthResponse.sample
+        mockURLSession.mockData = try JSONEncoder().encode(expectedResponse)
+        mockURLSession.mockResponse = HTTPURLResponse(
+            url: URL(string: "https://api.example.com/auth/login")!,
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: nil
+        )
+        
+        // When
+        let response = try await authService.login(request)
+        
+        // Then
+        XCTAssertEqual(response.user.email, expectedResponse.user.email)
+        XCTAssertEqual(mockURLSession.lastRequest?.httpMethod, "POST")
+        XCTAssertEqual(mockURLSession.lastRequest?.url?.path, "/api/auth/login")
+    }
+    
+    func testLogin_NetworkError() async {
+        // Given
+        let request = LoginRequest(email: "test@example.com", password: "password123")
+        mockURLSession.mockError = URLError(.notConnectedToInternet)
+        
+        // When/Then
+        do {
+            _ = try await authService.login(request)
+            XCTFail("Expected network error")
+        } catch let error as APIError {
+            XCTAssertEqual(error, .networkError)
+        } catch {
+            XCTFail("Unexpected error type: \(error)")
+        }
+    }
+    
+    func testLogin_InvalidResponse() async {
+        // Given
+        let request = LoginRequest(email: "test@example.com", password: "password123")
+        mockURLSession.mockData = "Invalid JSON".data(using: .utf8)
+        mockURLSession.mockResponse = HTTPURLResponse(
+            url: URL(string: "https://api.example.com/auth/login")!,
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: nil
+        )
+        
+        // When/Then
+        do {
+            _ = try await authService.login(request)
+            XCTFail("Expected parsing error")
+        } catch let error as APIError {
+            XCTAssertEqual(error, .decodingError)
+        }
+    }
+}
+```
+
+### 3. Model Tests
+
+**Purpose**: Test Codable compliance and data transformations
+
+**✅ Test These Scenarios:**
+- JSON encoding/decoding
+- Property mapping (snake_case ↔ camelCase)
+- Computed properties
+- Default values
+
+```swift
+// ✅ GOOD: Model test for Codable compliance
+class UserTests: XCTestCase {
+    
+    func testUserDecoding_CompleteData() throws {
+        // Given
+        let json = """
+        {
+            "id": 123,
+            "email": "test@example.com",
+            "first_name": "John",
+            "last_name": "Doe",
+            "is_active": true,
+            "created_at": "2024-01-01T00:00:00Z",
+            "device_token": "abc123"
+        }
+        """.data(using: .utf8)!
+        
+        // When
+        let user = try JSONDecoder().decode(User.self, from: json)
+        
+        // Then
+        XCTAssertEqual(user.id, 123)
+        XCTAssertEqual(user.email, "test@example.com")
+        XCTAssertEqual(user.firstName, "John")
+        XCTAssertEqual(user.lastName, "Doe")
+        XCTAssertTrue(user.isActive)
+        XCTAssertEqual(user.deviceToken, "abc123")
+    }
+    
+    func testUserDisplayName_FullName() {
+        // Given
+        let user = User(
+            id: 1,
+            email: "test@example.com",
+            firstName: "John",
+            lastName: "Doe",
+            isActive: true,
+            createdAt: Date(),
+            deviceToken: nil
+        )
+        
+        // When/Then
+        XCTAssertEqual(user.displayName, "John Doe")
+    }
+    
+    func testUserDisplayName_FirstNameOnly() {
+        // Given
+        let user = User(
+            id: 1,
+            email: "test@example.com",
+            firstName: "John",
+            lastName: nil,
+            isActive: true,
+            createdAt: Date(),
+            deviceToken: nil
+        )
+        
+        // When/Then
+        XCTAssertEqual(user.displayName, "John")
+    }
+    
+    func testUserDisplayName_EmailFallback() {
+        // Given
+        let user = User(
+            id: 1,
+            email: "test@example.com",
+            firstName: nil,
+            lastName: nil,
+            isActive: true,
+            createdAt: Date(),
+            deviceToken: nil
+        )
+        
+        // When/Then
+        XCTAssertEqual(user.displayName, "test@example.com")
+    }
+}
+```
+
+### 4. UI Tests (Critical Flows Only)
+
+**Purpose**: Test end-to-end user workflows
+
+**✅ Test These Scenarios:**
+- Complete authentication flow
+- Account linking process
+- Transaction viewing and filtering
+- Error state handling
+- Navigation flows
+
+```swift
+// ✅ GOOD: UI test for critical flow
+class AuthUITests: XCTestCase {
+    private var app: XCUIApplication!
+    
+    override func setUp() {
+        super.setUp()
+        app = XCUIApplication()
+        app.launchArguments = ["--uitesting"]
+        app.launch()
+    }
+    
+    func testCompleteLoginFlow() {
+        // Given - User is on login screen
+        let emailField = app.textFields["Email"]
+        let passwordField = app.secureTextFields["Password"]
+        let loginButton = app.buttons["Login"]
+        
+        XCTAssertTrue(emailField.exists)
+        XCTAssertTrue(passwordField.exists)
+        XCTAssertTrue(loginButton.exists)
+        
+        // When - User enters credentials and logs in
+        emailField.tap()
+        emailField.typeText("test@example.com")
+        
+        passwordField.tap()
+        passwordField.typeText("password123")
+        
+        loginButton.tap()
+        
+        // Then - User should be on main screen
+        let transactionsTab = app.tabBars.buttons["Transactions"]
+        XCTAssertTrue(transactionsTab.waitForExistence(timeout: 5))
+    }
+    
+    func testLoginError_InvalidCredentials() {
+        // Given
+        let emailField = app.textFields["Email"]
+        let passwordField = app.secureTextFields["Password"]
+        let loginButton = app.buttons["Login"]
+        
+        // When - User enters invalid credentials
+        emailField.tap()
+        emailField.typeText("wrong@example.com")
+        
+        passwordField.tap()
+        passwordField.typeText("wrongpassword")
+        
+        loginButton.tap()
+        
+        // Then - Error alert should appear
+        let errorAlert = app.alerts["Error"]
+        XCTAssertTrue(errorAlert.waitForExistence(timeout: 5))
+        XCTAssertTrue(errorAlert.staticTexts["Invalid email or password"].exists)
+        
+        errorAlert.buttons["OK"].tap()
+    }
+}
+```
+
+## 🎭 Mock Services Pattern
+
+### Creating Mock Services
+
+```swift
+// ✅ GOOD: Comprehensive mock service
+class MockAuthService: AuthServiceProtocol {
+    var loginResult: Result<AuthResponse, Error> = .success(AuthResponse.sample)
+    var registerResult: Result<AuthResponse, Error> = .success(AuthResponse.sample)
+    var updateDeviceTokenResult: Result<Void, Error> = .success(())
+    
+    var loginCallCount = 0
+    var registerCallCount = 0
+    var updateDeviceTokenCallCount = 0
+    
+    var loginDelay: TimeInterval = 0
+    var registerDelay: TimeInterval = 0
+    
+    func login(_ request: LoginRequest) async throws -> AuthResponse {
+        loginCallCount += 1
+        
+        if loginDelay > 0 {
+            try await Task.sleep(nanoseconds: UInt64(loginDelay * 1_000_000_000))
+        }
+        
+        switch loginResult {
+        case .success(let response):
+            return response
+        case .failure(let error):
+            throw error
+        }
+    }
+    
+    func register(_ request: RegisterRequest) async throws -> AuthResponse {
+        registerCallCount += 1
+        
+        if registerDelay > 0 {
+            try await Task.sleep(nanoseconds: UInt64(registerDelay * 1_000_000_000))
+        }
+        
+        switch registerResult {
+        case .success(let response):
+            return response
+        case .failure(let error):
+            throw error
+        }
+    }
+    
+    func updateDeviceToken(_ token: String) async throws {
+        updateDeviceTokenCallCount += 1
+        
+        switch updateDeviceTokenResult {
+        case .success:
+            return
+        case .failure(let error):
+            throw error
+        }
+    }
+}
+```
+
+### Service Protocol Pattern
+
+```swift
+// ✅ GOOD: Protocol for easy mocking
+protocol AuthServiceProtocol {
+    func login(_ request: LoginRequest) async throws -> AuthResponse
+    func register(_ request: RegisterRequest) async throws -> AuthResponse
+    func updateDeviceToken(_ token: String) async throws
+}
+
+// Production service
+class AuthService: AuthServiceProtocol {
+    private let apiClient: APIClient
+    
+    init(apiClient: APIClient = .shared) {
+        self.apiClient = apiClient
+    }
+    
+    func login(_ request: LoginRequest) async throws -> AuthResponse {
+        return try await apiClient.post("/api/auth/login", body: request)
+    }
+    
+    // ... other methods
+}
+
+// ViewModel uses protocol for dependency injection
+@MainActor
+class LoginViewModel: ObservableObject {
+    private let authService: AuthServiceProtocol
+    
+    init(authService: AuthServiceProtocol = AuthService()) {
+        self.authService = authService
+    }
+}
+```
+
+## 📊 Test Data Management
+
+### Sample Data Pattern
+
+```swift
+// ✅ GOOD: Centralized test data
+extension AuthResponse {
+    static let sample = AuthResponse(
+        accessToken: "sample_token_123",
+        user: User.sample
+    )
+}
+
+extension User {
+    static let sample = User(
+        id: 1,
+        email: "test@example.com",
+        firstName: "John",
+        lastName: "Doe",
+        isActive: true,
+        createdAt: Date(),
+        deviceToken: "sample_device_token"
+    )
+    
+    static let sampleWithoutName = User(
+        id: 2,
+        email: "noname@example.com",
+        firstName: nil,
+        lastName: nil,
+        isActive: true,
+        createdAt: Date(),
+        deviceToken: nil
+    )
+}
+
+extension Transaction {
+    static let sampleExpense = Transaction(
+        id: 1,
+        amount: 25.99,
+        merchantName: "Coffee Shop",
+        date: Date(),
+        category: "Food and Drink",
+        isPending: false
+    )
+    
+    static let sampleIncome = Transaction(
+        id: 2,
+        amount: -1000.00,
+        merchantName: "Payroll",
+        date: Date(),
+        category: "Payroll",
+        isPending: false
+    )
+    
+    static func samples(count: Int) -> [Transaction] {
+        (1...count).map { index in
+            Transaction(
+                id: index,
+                amount: Double.random(in: 1...100),
+                merchantName: "Merchant \(index)",
+                date: Date().addingTimeInterval(-Double(index) * 86400),
+                category: ["Food", "Transportation", "Shopping"].randomElement()!,
+                isPending: Bool.random()
+            )
+        }
+    }
+}
+```
+
+## 🚨 Testing Anti-Patterns
+
+### ❌ Things to Avoid
+
+```swift
+// ❌ DON'T: Test View implementation details
+func testLoginView_ButtonColor() {
+    // This is testing implementation, not behavior
+    XCTAssertEqual(loginView.loginButton.backgroundColor, .blue)
+}
+
+// ❌ DON'T: Make real API calls in tests
+func testAuthService_Login() async {
+    let service = AuthService()
+    // This will make a real network call
+    let response = try await service.login(LoginRequest(...))
+}
+
+// ❌ DON'T: Test multiple concerns in one test
+func testLoginViewModel_Everything() async {
+    // Test login, validation, error handling, loading state all in one test
+    // This makes it hard to identify what specifically failed
+}
+
+// ❌ DON'T: Use XCTAssertEqual for optional without unwrapping
+func testUser_FirstName() {
+    let user = User.sample
+    XCTAssertEqual(user.firstName, "John") // firstName is optional, may crash
+}
+```
+
+### ✅ Correct Patterns
+
+```swift
+// ✅ DO: Test behavior, not implementation
+func testLoginViewModel_ShowsErrorOnInvalidCredentials() async {
+    // Test that the ViewModel shows an error, not how it's displayed
+}
+
+// ✅ DO: Use mocks for external dependencies
+func testAuthService_Login() async {
+    let mockURLSession = MockURLSession()
+    let service = AuthService(urlSession: mockURLSession)
+    // Test with controlled mock data
+}
+
+// ✅ DO: One assertion per test
+func testLoginViewModel_SetsLoadingState() async {
+    // Test only loading state behavior
+}
+
+// ✅ DO: Safely unwrap optionals in tests
+func testUser_FirstName() {
+    let user = User.sample
+    XCTAssertEqual(user.firstName, "John")
+    // or
+    XCTAssertNotNil(user.firstName)
+    XCTAssertEqual(user.firstName!, "John")
+}
+```
+
+## 🎪 Test-Driven Development (TDD)
+
+### TDD Cycle for New Features
+
+1. **🔴 Red**: Write failing test first
+2. **🟢 Green**: Write minimal code to pass
+3. **🔵 Blue**: Refactor and improve
+
+```swift
+// Step 1: 🔴 Write failing test
+func testTransactionList_FiltersExpenses() async {
+    // Given
+    let viewModel = TransactionListViewModel()
+    viewModel.filterType = .expenses
+    
+    // When
+    await viewModel.loadTransactions()
+    
+    // Then
+    XCTAssertTrue(viewModel.transactions.allSatisfy { $0.amount > 0 })
+    // ❌ This will fail initially
+}
+
+// Step 2: 🟢 Write minimal implementation
+@MainActor
+class TransactionListViewModel: ObservableObject {
+    @Published var transactions: [Transaction] = []
+    @Published var filterType: FilterType = .all
+    
+    enum FilterType {
+        case all, expenses, income
+    }
+    
+    func loadTransactions() async {
+        let allTransactions = try await transactionService.getTransactions()
+        
+        switch filterType {
+        case .all:
+            transactions = allTransactions
+        case .expenses:
+            transactions = allTransactions.filter { $0.amount > 0 }
+        case .income:
+            transactions = allTransactions.filter { $0.amount < 0 }
+        }
+    }
+}
+
+// Step 3: 🔵 Refactor and add more tests
+func testTransactionList_FiltersIncome() async {
+    // Add test for income filtering
+}
+
+func testTransactionList_ShowsAllByDefault() async {
+    // Add test for default behavior
+}
+```
+
+## 📋 Testing Checklist
+
+Before submitting code, ensure:
+
+### Unit Tests ✅
+- [ ] All ViewModels have comprehensive tests
+- [ ] All Services have network mocking tests
+- [ ] All Models have Codable tests
+- [ ] Business logic edge cases are covered
+- [ ] Error scenarios are tested
+- [ ] Loading states are verified
+
+### Test Quality ✅
+- [ ] Tests have descriptive names
+- [ ] One assertion per test method
+- [ ] Given/When/Then structure is clear
+- [ ] Mock services are used appropriately
+- [ ] Test data is isolated and repeatable
+
+### Coverage ✅
+- [ ] All public methods are tested
+- [ ] Error paths are covered
+- [ ] Edge cases are handled
+- [ ] Critical user flows have UI tests
+
+### Performance ✅
+- [ ] Tests run quickly (< 1 second each)
+- [ ] No real network calls in unit tests
+- [ ] Mock data is lightweight
+- [ ] Tests can run in parallel
+
+## 🚀 Quick Commands
+
+```bash
+# Run all tests
+cmd+U
+
+# Run specific test class
+Right-click test class → Run
+
+# Run single test method
+Click diamond in gutter → Run
+
+# Debug test
+Click diamond in gutter → Debug
+
+# View test coverage
+Product → Test → Code Coverage
+```
+
+## 📚 Testing Resources
+
+- **XCTest Framework**: Standard iOS testing framework
+- **UI Testing**: XCUITest for end-to-end testing
+- **Mocking**: Protocol-based dependency injection
+- **Test Data**: Centralized sample data extensions
+- **Async Testing**: async/await testing patterns

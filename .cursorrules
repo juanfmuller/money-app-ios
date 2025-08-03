@@ -1,0 +1,319 @@
+# Money App iOS - Cursor Development Rules
+
+## 🎯 Development Guidelines
+
+This iOS codebase follows strict MVVM architecture patterns with modern SwiftUI and Swift concurrency. **Always follow these rules when making changes.**
+
+## 📁 Detailed Rules Documentation
+
+For comprehensive guidelines, refer to these specific rule files:
+
+### 🏗️ [Architecture Rules](.cursor/rules/architecture.md)
+- Feature-based code organization (mirrors backend structure)
+- MVVM pattern with SwiftUI
+- Modern Swift concurrency (async/await)
+- No caching strategy (polling-based)
+- Separation of concerns (Views → ViewModels → Services → Models)
+- Adding new features workflow
+
+### 🧪 [Testing Rules](.cursor/rules/testing.md)
+- Unit testing for ViewModels and Services
+- UI testing with SwiftUI
+- Test organization by feature
+- Mock patterns for API services
+- TDD workflow patterns
+
+### ⚠️ [Development Workflow](.cursor/rules/development-workflow.md)
+- **MANDATORY**: Build and run tests after every Swift file change
+- Git workflow and commit requirements
+- Test execution guidelines
+- Failure response protocols
+
+### 🚨 [Error Handling](.cursor/rules/error-handling.md)
+- Standardized error response handling
+- Custom error types for API responses
+- User-friendly error messages
+- Logging patterns and security
+
+### 🔗 [API Integration](.cursor/rules/api-integration.md)
+- RESTful client conventions
+- Request/response model patterns
+- JWT token management
+- Polling strategies and optimization
+
+### 🔐 [Security Rules](.cursor/rules/security.md)
+- JWT token storage and management
+- Keychain integration
+- API security best practices
+- Push notification token handling
+
+## ⚡ Quick Start Checklist
+
+### Before Making ANY Changes:
+1. ✅ Read the relevant rule files above
+2. ✅ Understand the feature-based MVVM architecture
+3. ✅ Build project and run tests to ensure they pass
+
+### When Adding New Features:
+1. ✅ Create feature directory: `MoneyApp/Features/NewFeature/`
+2. ✅ Follow the 4-layer pattern: `Views/`, `ViewModels/`, `Models/`, `Services/`
+3. ✅ Write tests FIRST: unit tests for ViewModels and Services
+4. ✅ Use Codable for all API contracts
+5. ✅ Implement proper async/await patterns
+
+### After Making Changes:
+1. ✅ **MANDATORY**: Build project (Cmd+B) and run tests (Cmd+U)
+2. ✅ Verify no SwiftUI preview errors
+3. ✅ Check API responses match Codable models
+4. ✅ Test polling behavior in simulator
+
+## 🚫 Never Do These Things:
+
+- ❌ **Never commit without building and testing**
+- ❌ Never mix business logic in SwiftUI Views
+- ❌ Never cache API responses (use polling only)
+- ❌ Never hardcode API endpoints or secrets
+- ❌ Never ignore compiler warnings
+- ❌ Never use force unwrapping without explicit safety
+- ❌ Never organize code by technical layer (all views/, all models/, etc.)
+
+## ✅ Always Do These Things:
+
+- ✅ **Always build and test after changing Swift files**
+- ✅ Always use @ObservableObject for ViewModels
+- ✅ Always delegate API calls to Services
+- ✅ Always use async/await for networking
+- ✅ Always handle errors gracefully
+- ✅ Always validate with Codable models
+- ✅ Always organize by feature domain
+
+## 🎪 Architecture Quick Reference
+
+```
+MoneyApp/
+├── Features/                  # ← Organize by business domain (mirrors backend)
+│   ├── Auth/                 # Authentication feature
+│   │   ├── Views/            # SwiftUI views only
+│   │   ├── ViewModels/       # @ObservableObject business logic
+│   │   ├── Models/           # Codable models
+│   │   └── Services/         # API calls and networking
+│   ├── Accounts/             # Account management
+│   ├── Transactions/         # Transaction handling
+│   └── Notifications/        # Push notifications
+├── Shared/                   # Cross-feature components
+│   ├── Models/              # Common Codable models
+│   ├── Views/               # Reusable SwiftUI components
+│   └── Services/            # Shared networking utilities
+├── Core/                    # Infrastructure
+│   ├── Networking/          # Base API client
+│   ├── Security/            # JWT & Keychain utilities
+│   └── Configuration/       # App settings
+└── Resources/               # Assets, strings, etc.
+```
+
+## 🧪 Testing Quick Reference
+
+```bash
+# Essential commands (run after EVERY Swift file change)
+# In Xcode:
+Cmd+B                           # Build - must succeed
+Cmd+U                           # Run all tests - must pass
+Cmd+Shift+K                     # Clean build folder
+
+# Feature-specific testing
+# Use Test Navigator to run specific test targets:
+AuthTests                       # Authentication tests
+AccountsTests                   # Account management tests
+TransactionsTests               # Transaction handling tests
+```
+
+## 🔗 MVVM Pattern Quick Reference
+
+```swift
+// View Layer (SwiftUI) - UI concerns only
+struct LoginView: View {
+    @StateObject private var viewModel = LoginViewModel()
+    
+    var body: some View {
+        VStack {
+            TextField("Email", text: $viewModel.email)
+            SecureField("Password", text: $viewModel.password)
+            Button("Login") {
+                Task { await viewModel.login() }  // ← Delegate to ViewModel
+            }
+        }
+        .alert("Error", isPresented: $viewModel.showError) {
+            Button("OK") { }
+        } message: {
+            Text(viewModel.errorMessage)  // ← ViewModel handles errors
+        }
+    }
+}
+
+// ViewModel Layer (@ObservableObject) - Business logic only
+@MainActor
+class LoginViewModel: ObservableObject {
+    @Published var email = ""
+    @Published var password = ""
+    @Published var isLoading = false
+    @Published var showError = false
+    @Published var errorMessage = ""
+    
+    private let authService = AuthService()
+    
+    func login() async {
+        isLoading = true
+        do {
+            let request = LoginRequest(email: email, password: password)
+            let response = try await authService.login(request)  // ← Delegate to Service
+            // Handle success...
+        } catch {
+            handleError(error)  // ← Proper error handling
+        }
+        isLoading = false
+    }
+}
+
+// Service Layer - API calls only
+class AuthService {
+    private let apiClient = APIClient.shared
+    
+    func login(_ request: LoginRequest) async throws -> AuthResponse {
+        return try await apiClient.post("/api/auth/login", body: request)
+    }
+}
+
+// Model Layer (Codable) - Data contracts
+struct LoginRequest: Codable {
+    let email: String
+    let password: String
+}
+
+struct AuthResponse: Codable {
+    let accessToken: String
+    let user: User
+}
+```
+
+## 📋 Code Review Checklist
+
+When reviewing or writing code, ensure:
+
+### Architecture ✅
+- [ ] Code is organized by feature, not layer
+- [ ] Views only handle UI concerns
+- [ ] Business logic is in ViewModels
+- [ ] API calls are in Services
+- [ ] Codable models define API contracts
+
+### SwiftUI & Concurrency ✅
+- [ ] Views use @StateObject for ViewModels
+- [ ] ViewModels are @MainActor classes
+- [ ] Async operations use async/await
+- [ ] Proper Task { } usage in views
+- [ ] No force unwrapping without safety
+
+### Testing ✅
+- [ ] Unit tests for ViewModel methods
+- [ ] Unit tests for Service methods
+- [ ] UI tests for critical user flows
+- [ ] Mock services for testing
+- [ ] All tests pass with good coverage
+
+### Security ✅
+- [ ] No hardcoded secrets
+- [ ] JWT tokens stored securely
+- [ ] API client uses proper authentication
+- [ ] No sensitive data in logs
+
+### Error Handling ✅
+- [ ] Specific error types for API responses
+- [ ] User-friendly error messages
+- [ ] Graceful degradation on failures
+- [ ] Proper async error propagation
+
+## 🎯 API Integration Patterns
+
+### Polling Strategy (No Caching)
+```swift
+class TransactionViewModel: ObservableObject {
+    @Published var transactions: [Transaction] = []
+    private let transactionService = TransactionService()
+    
+    func startPolling() {
+        Task {
+            while !Task.isCancelled {
+                await refreshTransactions()
+                try? await Task.sleep(nanoseconds: 3_000_000_000) // 3 seconds
+            }
+        }
+    }
+    
+    private func refreshTransactions() async {
+        do {
+            transactions = try await transactionService.getRecent()
+        } catch {
+            // Handle polling errors gracefully
+        }
+    }
+}
+```
+
+### JWT Token Management
+```swift
+class APIClient {
+    private var authToken: String? {
+        KeychainService.shared.getToken()
+    }
+    
+    func authenticatedRequest<T: Codable>(_ endpoint: String) async throws -> T {
+        guard let token = authToken else {
+            throw APIError.notAuthenticated
+        }
+        // Use token in Authorization header...
+    }
+}
+```
+
+## 🚀 Backend Integration Reference
+
+The iOS app integrates with these backend endpoints:
+
+### Authentication
+- `POST /api/auth/register` → `AuthService.register()`
+- `POST /api/auth/login` → `AuthService.login()`
+- `POST /api/auth/device-token` → `AuthService.updateDeviceToken()`
+
+### Accounts
+- `POST /api/accounts/link/token` → `AccountService.createLinkToken()`
+- `POST /api/accounts/link/exchange` → `AccountService.linkAccount()`
+- `GET /api/accounts/` → `AccountService.getAccounts()`
+- `GET /api/accounts/sync/status` → `AccountService.getSyncStatus()` (polling)
+
+### Transactions
+- `GET /api/transactions/recent` → `TransactionService.getRecent()` (polling)
+- `GET /api/transactions/` → `TransactionService.getTransactions()`
+- `GET /api/transactions/summary` → `TransactionService.getSummary()`
+
+### Notifications
+- `POST /api/notifications/test` → `NotificationService.sendTest()`
+
+## 🎪 Remember
+
+This architecture enables:
+- **🚀 Fast development**: Clear MVVM patterns reduce decision fatigue
+- **🔧 Easy maintenance**: Features are isolated and testable
+- **👥 Team collaboration**: Consistent conventions across the codebase
+- **🎯 Quality assurance**: Tests catch regressions automatically
+- **📈 Scalability**: Add features without affecting existing code
+- **⚡ Real-time updates**: Efficient polling keeps data fresh
+
+**Every Swift file change requires building and testing. No exceptions.** 🧪
+
+## 🆘 Need Help?
+
+1. 📖 **Read the specific rule files** in `.cursor/rules/`
+2. 🔍 **Look at existing features** for patterns to follow
+3. 🏗️ **Mirror the backend structure** for consistency
+4. 🧪 **Build and test early and often** to catch issues quickly
+5. 🎪 **Follow the established MVVM patterns** for consistency
