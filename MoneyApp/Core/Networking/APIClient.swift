@@ -20,7 +20,7 @@ protocol APIClientProtocol: Sendable {
 actor APIClient: APIClientProtocol {
     static let shared = APIClient()
     
-    private let baseURL = URL(string: "https://api.moneyapp.com")!
+    private let baseURL = AppConstants.apiBaseURL
     private let session = URLSession.shared
     
     func post<T: Codable & Sendable, U: Codable & Sendable>(_ endpoint: String, body: U) async throws -> T {
@@ -38,7 +38,10 @@ actor APIClient: APIClientProtocol {
         }
         
         do {
-            request.httpBody = try JSONEncoder().encode(body)
+            let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .iso8601
+            encoder.keyEncodingStrategy = .convertToSnakeCase
+            request.httpBody = try encoder.encode(body)
         } catch {
             throw OnboardingAPIError.encodingError
         }
@@ -91,7 +94,10 @@ actor APIClient: APIClientProtocol {
             switch httpResponse.statusCode {
             case 200...299:
                 do {
-                    return try JSONDecoder().decode(T.self, from: data)
+                    let decoder = JSONDecoder()
+                    decoder.dateDecodingStrategy = .iso8601
+                    decoder.keyDecodingStrategy = .convertFromSnakeCase
+                    return try decoder.decode(T.self, from: data)
                 } catch {
                     print("🔴 Decoding error for \(request.url?.path ?? "unknown"): \(error)")
                     throw OnboardingAPIError.decodingError

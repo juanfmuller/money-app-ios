@@ -55,15 +55,14 @@ actor OnboardingService: OnboardingServiceProtocol {
     
     func register(_ request: UserRegistrationRequest) async throws -> AuthTokenResponse {
         do {
-            let response: AuthTokenResponse = try await apiClient.post(APIEndpoints.Auth.register, body: request)
+            let _: UserResponse = try await apiClient.post(APIEndpoints.Auth.register, body: request)
             
-            // Store JWT tokens securely for new user
-            await tokenManager.saveTokens(
-                accessToken: response.accessToken,
-                refreshToken: nil // AuthTokenResponse doesn't include refresh token
-            )
+            let login_response = try await self.login(UserLoginRequest(
+                email: request.email,
+                password: request.password
+            ))
             
-            return response
+            return login_response
             
         } catch {
             throw mapAuthError(error)
