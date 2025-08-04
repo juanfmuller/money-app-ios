@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Combine
+import MoneyAppGenerated
 
 final class AppRouter: ObservableObject {
     @Published var currentScreen: Screen = .auth
@@ -14,11 +15,11 @@ final class AppRouter: ObservableObject {
     
     // Authentication state
     @Published var isAuthenticated = false
-    @Published var currentUser: User?
+    @Published var currentUser: UserResponse?
     
     enum Screen: Hashable {
         case auth
-        case onboarding(User)
+        case onboarding(UserResponse)
         case home
         case accounts
         case transactions
@@ -53,7 +54,7 @@ final class AppRouter: ObservableObject {
         currentUser = nil
     }
     
-    func showOnboarding(for user: User) {
+    func showOnboarding(for user: UserResponse) {
         navigate(to: .onboarding(user))
         popToRoot()
         isAuthenticated = true
@@ -84,11 +85,12 @@ final class AppRouter: ObservableObject {
     }
     
     // MARK: - Authentication Actions
-    func handleSuccessfulAuth(_ response: AuthResponse) {
-        currentUser = response.user
+    func handleSuccessfulAuth(_ response: AuthTokenResponse, user: UserResponse) {
+        currentUser = user
         
-        if response.user.needsOnboarding || response.isFirstLogin {
-            showOnboarding(for: response.user)
+        // For now, we'll show onboarding for new users (you can add logic based on user properties)
+        if user.firstName == nil || user.lastName == nil {
+            showOnboarding(for: user)
         } else {
             showMainApp()
         }

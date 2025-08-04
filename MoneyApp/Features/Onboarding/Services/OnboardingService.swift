@@ -6,16 +6,15 @@
 //
 
 import Foundation
+import MoneyAppGenerated
 
 // MARK: - Protocol Definition
 
 protocol OnboardingServiceProtocol: Sendable {
-    func login(_ request: LoginRequest) async throws -> AuthResponse
-    func register(_ request: RegisterRequest) async throws -> AuthResponse
-    func updateDeviceToken(_ token: String) async throws -> SuccessResponse
-    func completeOnboarding(_ completion: OnboardingCompletion) async throws -> SuccessResponse
-    func logout() async throws -> SuccessResponse
-    func refreshToken(_ refreshToken: String) async throws -> AuthResponse
+    func login(_ request: UserLoginRequest) async throws -> AuthTokenResponse
+    func register(_ request: UserRegistrationRequest) async throws -> AuthTokenResponse
+    func updateDeviceToken(_ token: String) async throws -> DeviceTokenResponse
+    func logout() async throws -> DeviceTokenResponse
 }
 
 // MARK: - OnboardingService Actor
@@ -37,14 +36,14 @@ actor OnboardingService: OnboardingServiceProtocol {
     
     // MARK: - Authentication Methods
     
-    func login(_ request: LoginRequest) async throws -> AuthResponse {
+    func login(_ request: UserLoginRequest) async throws -> AuthTokenResponse {
         do {
-            let response: AuthResponse = try await apiClient.post("/api/auth/login", body: request)
+            let response: AuthTokenResponse = try await apiClient.post("/api/auth/login", body: request)
             
             // Store JWT tokens securely
             await tokenManager.saveTokens(
                 accessToken: response.accessToken,
-                refreshToken: response.refreshToken
+                refreshToken: nil // AuthTokenResponse doesn't include refresh token
             )
             
             return response
@@ -54,14 +53,14 @@ actor OnboardingService: OnboardingServiceProtocol {
         }
     }
     
-    func register(_ request: RegisterRequest) async throws -> AuthResponse {
+    func register(_ request: UserRegistrationRequest) async throws -> AuthTokenResponse {
         do {
-            let response: AuthResponse = try await apiClient.post("/api/auth/register", body: request)
+            let response: AuthTokenResponse = try await apiClient.post("/api/auth/register", body: request)
             
             // Store JWT tokens securely for new user
             await tokenManager.saveTokens(
                 accessToken: response.accessToken,
-                refreshToken: response.refreshToken
+                refreshToken: nil // AuthTokenResponse doesn't include refresh token
             )
             
             return response
@@ -71,30 +70,10 @@ actor OnboardingService: OnboardingServiceProtocol {
         }
     }
     
-    func refreshToken(_ refreshToken: String) async throws -> AuthResponse {
-        do {
-            let request = RefreshTokenRequest(refreshToken: refreshToken)
-            let response: AuthResponse = try await apiClient.post("/api/auth/refresh", body: request)
-            
-            // Update stored tokens
-            await tokenManager.saveTokens(
-                accessToken: response.accessToken,
-                refreshToken: response.refreshToken
-            )
-            
-            return response
-            
-        } catch {
-            // Clear tokens on refresh failure
-            await tokenManager.clearTokens()
-            throw mapAuthError(error)
-        }
-    }
-    
-    func logout() async throws -> SuccessResponse {
+    func logout() async throws -> DeviceTokenResponse {
         do {
             // Notify backend of logout (optional)
-            let response: SuccessResponse = try await apiClient.post("/api/auth/logout")
+            let response: DeviceTokenResponse = try await apiClient.post("/api/auth/logout")
             
             // Clear local tokens
             await tokenManager.clearTokens()
@@ -110,13 +89,9 @@ actor OnboardingService: OnboardingServiceProtocol {
     
     // MARK: - Device & Onboarding Methods
     
-    func updateDeviceToken(_ token: String) async throws -> SuccessResponse {
+    func updateDeviceToken(_ token: String) async throws -> DeviceTokenResponse {
         let request = DeviceTokenRequest(deviceToken: token)
         return try await apiClient.post("/api/auth/device-token", body: request)
-    }
-    
-    func completeOnboarding(_ completion: OnboardingCompletion) async throws -> SuccessResponse {
-        return try await apiClient.post("/api/user/onboarding/complete", body: completion)
     }
     
     // MARK: - Private Helper Methods
@@ -140,13 +115,7 @@ actor OnboardingService: OnboardingServiceProtocol {
 
 // MARK: - Helper Models
 
-private struct RefreshTokenRequest: Codable {
-    let refreshToken: String
-    
-    enum CodingKeys: String, CodingKey {
-        case refreshToken = "refresh_token"
-    }
-}
+// Note: Using generated models from MoneyAppGenerated instead of custom models
 
 // MARK: - Token Manager Protocol & Implementation
 
@@ -384,6 +353,31 @@ actor APIClient: APIClientProtocol {
             }
         } catch {
             throw OnboardingAPIError.networkError
+        }
+    }
+}
+
+// MARK: - Auth Error Definitions
+
+enum AuthError: LocalizedError, Equatable {
+    case invalidCredentials
+    case accountLocked
+    case emailAlreadyExists
+    case registrationFailed
+    case networkError
+    
+    var errorDescription: String? {
+        switch self {
+        case .invalidCredentials:
+            return "Invalid email or password. Please try again."
+        case .accountLocked:
+            return "Your account has been locked. Please contact support."
+        case .emailAlreadyExists:
+            return "An account with this email already exists."
+        case .registrationFailed:
+            return "Registration failed. Please try again."
+        case .networkError:
+            return "Network error. Please check your connection."
         }
     }
 }

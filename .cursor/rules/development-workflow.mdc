@@ -59,10 +59,10 @@ xcodebuild -project MoneyApp.xcodeproj -scheme MoneyApp -destination 'platform=i
 **MANDATORY** Before moving on, verify:
 
 - [ ] Code is organized by feature, not technical layer
+- [ ] Models for APIs are always from /Generated `import MoneyAppGenerated`
 - [ ] Views only contain SwiftUI UI code
 - [ ] ViewModels use @Observable and handle all business logic
 - [ ] Services use actors and protocols for proper concurrency
-- [ ] Models are pure Codable data structures
 - [ ] No direct API calls in Views
 - [ ] Proper async/await usage with Sendable protocols
 - [ ] @MainActor on ViewModels

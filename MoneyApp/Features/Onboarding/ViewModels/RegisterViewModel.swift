@@ -7,6 +7,7 @@
 
 import Foundation
 import Observation
+import MoneyAppGenerated
 
 // MARK: - RegisterViewModel (@Observable - Swift 6)
 
@@ -26,7 +27,7 @@ final class RegisterViewModel {
     var showError = false
     var errorMessage = ""
     var isAuthenticated = false
-    var currentUser: User?
+    var currentUser: UserResponse?
     
     // Field-specific errors for inline display
     var emailError: String?
@@ -61,12 +62,11 @@ final class RegisterViewModel {
         isLoading = true
         
         do {
-            let request = RegisterRequest(
+            let request = UserRegistrationRequest(
                 email: email.lowercased().trimmingCharacters(in: .whitespacesAndNewlines),
                 password: password,
                 firstName: firstName.trimmingCharacters(in: .whitespacesAndNewlines),
-                lastName: lastName.trimmingCharacters(in: .whitespacesAndNewlines),
-                acceptedTerms: acceptedTerms
+                lastName: lastName.trimmingCharacters(in: .whitespacesAndNewlines)
             )
             
             let response = try await onboardingService.register(request)
@@ -217,8 +217,10 @@ final class RegisterViewModel {
         return hasLetter && hasNumber && hasSpecialChar
     }
     
-    private func handleSuccessfulRegistration(_ response: AuthResponse) async {
-        currentUser = response.user
+    private func handleSuccessfulRegistration(_ response: AuthTokenResponse) async {
+        // Note: AuthTokenResponse doesn't contain user data directly
+        // In a real implementation, you would fetch user data separately or the response would include it
+        // For now, we'll just mark as authenticated and show onboarding
         isAuthenticated = true
         
         // Always show onboarding for new users

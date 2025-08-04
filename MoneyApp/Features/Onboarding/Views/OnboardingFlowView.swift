@@ -6,14 +6,15 @@
 //
 
 import SwiftUI
+import MoneyAppGenerated
 
 struct OnboardingFlowView: View {
     @State private var viewModel = OnboardingFlowViewModel()
     @EnvironmentObject var router: AppRouter
     
-    let user: User
+    let user: UserResponse
     
-    init(user: User) {
+    init(user: UserResponse) {
         self.user = user
     }
     
@@ -325,6 +326,6 @@ struct FeatureCard: View {
 // MARK: - Preview
 
 #Preview {
-    OnboardingFlowView(user: User.sample)
+    OnboardingFlowView(user: UserResponse.sample)
         .environmentObject(AppRouter())
 }

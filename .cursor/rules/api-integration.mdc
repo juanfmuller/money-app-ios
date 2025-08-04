@@ -9,6 +9,27 @@ alwaysApply: false
 
 This iOS app uses **polling-based data synchronization** with the FastAPI backend. No caching is implemented - all data is fetched fresh on demand for maximum simplicity and fast iteration.
 
+## 📋 Data Models (Codable)
+**🚨 MANDATORY 🚨** Always check for /Generated models before implementing. `import MoneyAppGenerated`
+
+### Request Models
+**AUTOMATICALLY GENERATED** Found in `money-app-ios/Generated`
+
+### Response Models
+**AUTOMATICALLY GENERATED** Found in `money-app-ios/Generated`
+
+## 📱 Polling Strategy Implementation
+
+### Automatic Background Polling
+
+**✅ DO:**
+- Always use polling for "real-time" data
+- Use async/await for everything
+
+**❌ DON'T:**
+- Don't use Combine
+- Don't implement caching
+
 ## 🎯 Integration Architecture
 
 ### Backend API Overview
@@ -221,27 +242,6 @@ protocol TransactionServiceProtocol: Sendable {
     func getCategories() async throws -> CategoriesResponse
 }
 ```
-
-## 📱 Polling Strategy Implementation
-
-### Automatic Background Polling
-
-**✅ DO:**
-- Always use polling for "real-time" data
-- Use async/await for everything
-
-**❌ DON'T:**
-- Don't use Combine
-- Don't implement caching
-
-## 📋 Data Models (Codable)
-
-### Request Models
-**AUTOMATICALLY GENERATED** Found in `money-app-ios/Generated`
-
-### Response Models
-**AUTOMATICALLY GENERATED** Found in `money-app-ios/Generated`
-
 
 ## 📚 Remember
 

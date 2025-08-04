@@ -181,19 +181,9 @@ User Interaction → View → ViewModel → Service → API
 mkdir -p MoneyApp/Features/NewFeature/{Views,ViewModels,Models,Services}
 ```
 
-2. **Define Models** (API contracts first)
-```swift
-// Models/NewFeatureRequest.swift
-struct NewFeatureRequest: Codable {
-    let parameter: String
-}
-
-// Models/NewFeatureResponse.swift
-struct NewFeatureResponse: Codable {
-    let id: Int
-    let result: String
-}
-```
+**🚨 MANDATORY 🚨** Always check for /Generated models before adding any new models.
+`import MoneyAppGenerated`
+2. **List out Models** List out the models you will use for this from the generated models.
 
 3. **Create Service** (API integration)
 ```swift
@@ -294,7 +284,6 @@ This architecture provides:
 
 - **🔧 Maintainability**: Clear separation makes code easy to modify
 - **🧪 Testability**: Each layer can be tested independently
-- **♻️ Reusability**: Services and models can be shared across features
 - **🎪 Consistency**: Standardized patterns across all features
 - **🚀 Scalability**: Add new features without affecting existing ones
 - **🔄 Backend Alignment**: Structure mirrors backend for easier integration

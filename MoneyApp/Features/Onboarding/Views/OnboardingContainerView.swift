@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import MoneyAppGenerated
 
 struct OnboardingContainerView: View {
     @EnvironmentObject var router: AppRouter
@@ -49,10 +50,10 @@ struct OnboardingContainerView: View {
     
     // MARK: - Helper Methods
     
-    private func getCurrentUser() -> User? {
+    private func getCurrentUser() -> UserResponse? {
         // In a real app, this would get the current user from auth state
         // For now, return a sample user
-        return User.sample
+        return UserResponse.sample
     }
 }
 

@@ -6,89 +6,7 @@
 //
 
 import Foundation
-
-// MARK: - Authentication Request Models
-
-struct LoginRequest: Codable, Sendable {
-    let email: String
-    let password: String
-}
-
-struct RegisterRequest: Codable, Sendable {
-    let email: String
-    let password: String
-    let firstName: String
-    let lastName: String
-    let acceptedTerms: Bool
-    
-    enum CodingKeys: String, CodingKey {
-        case email, password
-        case firstName = "first_name"
-        case lastName = "last_name"
-        case acceptedTerms = "accepted_terms"
-    }
-}
-
-struct DeviceTokenRequest: Codable, Sendable {
-    let deviceToken: String
-    
-    enum CodingKeys: String, CodingKey {
-        case deviceToken = "device_token"
-    }
-}
-
-// MARK: - Authentication Response Models
-
-struct AuthResponse: Codable, Sendable {
-    let accessToken: String
-    let refreshToken: String?
-    let user: User
-    let isFirstLogin: Bool
-    
-    enum CodingKeys: String, CodingKey {
-        case accessToken = "access_token"
-        case refreshToken = "refresh_token"
-        case user
-        case isFirstLogin = "is_first_login"
-    }
-}
-
-struct User: Codable, Identifiable, Sendable, Hashable {
-    let id: Int
-    let email: String
-    let firstName: String
-    let lastName: String
-    let isActive: Bool
-    let createdAt: Date
-    let deviceToken: String?
-    let hasCompletedOnboarding: Bool
-    
-    enum CodingKeys: String, CodingKey {
-        case id, email
-        case firstName = "first_name"
-        case lastName = "last_name"
-        case isActive = "is_active"
-        case createdAt = "created_at"
-        case deviceToken = "device_token"
-        case hasCompletedOnboarding = "has_completed_onboarding"
-    }
-    
-    // MARK: - Computed Properties
-    
-    var displayName: String {
-        return "\(firstName) \(lastName)"
-    }
-    
-    var initials: String {
-        let firstInitial = firstName.first?.uppercased() ?? ""
-        let lastInitial = lastName.first?.uppercased() ?? ""
-        return firstInitial + lastInitial
-    }
-    
-    var needsOnboarding: Bool {
-        return !hasCompletedOnboarding
-    }
-}
+import MoneyAppGenerated
 
 // MARK: - Onboarding Flow Models
 
@@ -131,18 +49,6 @@ struct OnboardingStep: Sendable {
     ]
 }
 
-struct OnboardingCompletion: Codable, Sendable {
-    let userId: Int
-    let completedSteps: [String]
-    let completedAt: Date
-    
-    enum CodingKeys: String, CodingKey {
-        case userId = "user_id"
-        case completedSteps = "completed_steps"
-        case completedAt = "completed_at"
-    }
-}
-
 // MARK: - Validation Models
 
 enum ValidationError: LocalizedError {
@@ -174,79 +80,74 @@ enum ValidationError: LocalizedError {
     }
 }
 
-// MARK: - API Error Models
+// MARK: - UI State Models
 
-enum AuthError: LocalizedError {
-    case invalidCredentials
-    case emailAlreadyExists
-    case accountLocked
-    case tooManyAttempts
-    case sessionExpired
-    case registrationFailed
-    
-    var errorDescription: String? {
-        switch self {
-        case .invalidCredentials:
-            return "Invalid email or password. Please check your credentials and try again."
-        case .emailAlreadyExists:
-            return "An account with this email already exists. Please sign in instead."
-        case .accountLocked:
-            return "Your account has been temporarily locked. Please try again in 15 minutes."
-        case .tooManyAttempts:
-            return "Too many login attempts. Please wait before trying again."
-        case .sessionExpired:
-            return "Your session has expired. Please sign in again."
-        case .registrationFailed:
-            return "Registration failed. Please check your information and try again."
-        }
-    }
+struct OnboardingFormState: Sendable {
+    var email = ""
+    var password = ""
+    var confirmPassword = ""
+    var firstName = ""
+    var lastName = ""
+    var acceptedTerms = false
+    var isLoading = false
+    var currentStep = 0
+    var completedSteps: Set<String> = []
 }
 
-// MARK: - Success Response Model
+// MARK: - UI Helper Models
 
-struct SuccessResponse: Codable, Sendable {
-    let message: String
-    let success: Bool
+struct OnboardingProgress: Sendable {
+    let currentStep: Int
+    let totalSteps: Int
+    let progress: Double
+    
+    init(currentStep: Int, totalSteps: Int) {
+        self.currentStep = currentStep
+        self.totalSteps = totalSteps
+        self.progress = Double(currentStep) / Double(totalSteps)
+    }
 }
 
 // MARK: - Sample Data Extensions (for testing and previews)
 
-extension User {
-    static let sample = User(
+extension UserResponse {
+    static let sample = UserResponse(
         id: 1,
         email: "john.doe@example.com",
         firstName: "John",
         lastName: "Doe",
         isActive: true,
-        createdAt: Date(),
-        deviceToken: nil,
-        hasCompletedOnboarding: false
+        createdAt: Date()
     )
     
-    static let sampleCompleted = User(
+    static let sampleCompleted = UserResponse(
         id: 2,
         email: "jane.smith@example.com",
         firstName: "Jane",
         lastName: "Smith",
         isActive: true,
-        createdAt: Date(),
-        deviceToken: "sample_device_token",
-        hasCompletedOnboarding: true
-    )
-}
-
-extension AuthResponse {
-    static let sample = AuthResponse(
-        accessToken: "sample_access_token_123",
-        refreshToken: "sample_refresh_token_456",
-        user: User.sample,
-        isFirstLogin: true
+        createdAt: Date()
     )
     
-    static let sampleReturningUser = AuthResponse(
-        accessToken: "sample_access_token_789",
-        refreshToken: "sample_refresh_token_012",
-        user: User.sampleCompleted,
-        isFirstLogin: false
+    // MARK: - Computed Properties for UI
+    
+    var displayName: String {
+        let first = firstName ?? ""
+        let last = lastName ?? ""
+        return "\(first) \(last)".trimmingCharacters(in: .whitespaces)
+    }
+    
+    var initials: String {
+        let firstInitial = firstName?.first?.uppercased() ?? ""
+        let lastInitial = lastName?.first?.uppercased() ?? ""
+        return firstInitial + lastInitial
+    }
+}
+
+extension AuthTokenResponse {
+    static let sample = AuthTokenResponse(
+        accessToken: "sample_access_token_123",
+        tokenType: "bearer",
+        expiresIn: 3600
     )
 }
