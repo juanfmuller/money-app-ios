@@ -9,8 +9,6 @@
 /* Begin PBXBuildFile section */
 		BC90702B2E40278E004B0623 /* MoneyAppGenerated in Frameworks */ = {isa = PBXBuildFile; productRef = BC90702A2E40278E004B0623 /* MoneyAppGenerated */; };
 		BC90702E2E402959004B0623 /* MoneyAppGenerated in Frameworks */ = {isa = PBXBuildFile; productRef = BC90702D2E402959004B0623 /* MoneyAppGenerated */; };
-		BC9070362E402996004B0623 /* ModelIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC9070342E402996004B0623 /* ModelIndex.swift */; };
-		BC9070372E402996004B0623 /* APIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC9070332E402996004B0623 /* APIService.swift */; };
 		BC90703A2E402B34004B0623 /* MoneyAppGenerated in Frameworks */ = {isa = PBXBuildFile; productRef = BC9070392E402B34004B0623 /* MoneyAppGenerated */; };
 		BC9A9CD22E3F2D6A00352F2B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BC9A9CCD2E3F2D6A00352F2B /* Assets.xcassets */; };
 		BC9A9CD32E3F2D6A00352F2B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC9A9CCE2E3F2D6A00352F2B /* ContentView.swift */; };
@@ -31,18 +29,19 @@
 		BCBC2EF22E4031020060C7BB /* RegisterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCBC2EE92E4031020060C7BB /* RegisterView.swift */; };
 		BCBC2EF32E4031020060C7BB /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCBC2EE62E4031020060C7BB /* LoginView.swift */; };
 		BCBC2EF42E4031020060C7BB /* OnboardingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCBC2EE02E4031020060C7BB /* OnboardingService.swift */; };
-
 		BCBC2EF92E4043F80060C7BB /* LoggingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCBC2EF62E4043F80060C7BB /* LoggingService.swift */; };
 		BCBC2EFC2E4044000060C7BB /* FirebaseConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCBC2EFA2E4044000060C7BB /* FirebaseConfig.swift */; };
 		BCBC2EFF2E40442B0060C7BB /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = BCBC2EFE2E40442B0060C7BB /* README.md */; };
 		BCBC2F0A2E4049D20060C7BB /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = BCBC2F092E4049D20060C7BB /* FirebaseAnalytics */; };
 		BCBC2F0C2E4049D20060C7BB /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = BCBC2F0B2E4049D20060C7BB /* FirebaseCore */; };
 		BCBC2F0E2E4049D20060C7BB /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = BCBC2F0D2E4049D20060C7BB /* FirebaseCrashlytics */; };
+		BCBC2F152E406E640060C7BB /* AppConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCBC2F142E406E580060C7BB /* AppConstants.swift */; };
+		BCBC2F182E406FA50060C7BB /* ModelIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCBC2F162E406FA50060C7BB /* ModelIndex.swift */; };
+		BCBC2F1B2E406FAD0060C7BB /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCBC2F192E406FAD0060C7BB /* APIClient.swift */; };
+		BCBC2F1D2E4071580060C7BB /* APIEndpoints.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCBC2F1C2E4071530060C7BB /* APIEndpoints.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		BC9070332E402996004B0623 /* APIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIService.swift; sourceTree = "<group>"; };
-		BC9070342E402996004B0623 /* ModelIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelIndex.swift; sourceTree = "<group>"; };
 		BC9A9CBA2E3F2D3C00352F2B /* MoneyApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MoneyApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BC9A9CCD2E3F2D6A00352F2B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		BC9A9CCE2E3F2D6A00352F2B /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -62,10 +61,13 @@
 		BCBC2EE72E4031020060C7BB /* OnboardingContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingContainerView.swift; sourceTree = "<group>"; };
 		BCBC2EE82E4031020060C7BB /* OnboardingFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlowView.swift; sourceTree = "<group>"; };
 		BCBC2EE92E4031020060C7BB /* RegisterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterView.swift; sourceTree = "<group>"; };
-
 		BCBC2EF62E4043F80060C7BB /* LoggingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingService.swift; sourceTree = "<group>"; };
 		BCBC2EFA2E4044000060C7BB /* FirebaseConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseConfig.swift; sourceTree = "<group>"; };
 		BCBC2EFE2E40442B0060C7BB /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		BCBC2F142E406E580060C7BB /* AppConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConstants.swift; sourceTree = "<group>"; };
+		BCBC2F162E406FA50060C7BB /* ModelIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelIndex.swift; sourceTree = "<group>"; };
+		BCBC2F192E406FAD0060C7BB /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+		BCBC2F1C2E4071530060C7BB /* APIEndpoints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIEndpoints.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -86,15 +88,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		BC9070352E402996004B0623 /* Models */ = {
-			isa = PBXGroup;
-			children = (
-				BC9070332E402996004B0623 /* APIService.swift */,
-				BC9070342E402996004B0623 /* ModelIndex.swift */,
-			);
-			path = Models;
-			sourceTree = "<group>";
-		};
 		BC9A9CB12E3F2D3C00352F2B = {
 			isa = PBXGroup;
 			children = (
@@ -115,7 +108,6 @@
 		BC9A9CD02E3F2D6A00352F2B /* MoneyApp */ = {
 			isa = PBXGroup;
 			children = (
-				BC9070352E402996004B0623 /* Models */,
 				BC9A9CDA2E40202400352F2B /* Core */,
 				BC9A9CE42E40202400352F2B /* Features */,
 				BC9A9CE92E40202400352F2B /* Preview Content */,
@@ -137,6 +129,8 @@
 		BC9A9CDA2E40202400352F2B /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				BCBC2F172E406FA50060C7BB /* Models */,
+				BCBC2F1A2E406FAD0060C7BB /* Networking */,
 				BCBC2EFB2E4044000060C7BB /* Configuration */,
 				BCBC2EF72E4043F80060C7BB /* Logging */,
 				BC9A9CD92E40202400352F2B /* Navigation */,
@@ -263,9 +257,27 @@
 		BCBC2EFB2E4044000060C7BB /* Configuration */ = {
 			isa = PBXGroup;
 			children = (
+				BCBC2F142E406E580060C7BB /* AppConstants.swift */,
 				BCBC2EFA2E4044000060C7BB /* FirebaseConfig.swift */,
 			);
 			path = Configuration;
+			sourceTree = "<group>";
+		};
+		BCBC2F172E406FA50060C7BB /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				BCBC2F162E406FA50060C7BB /* ModelIndex.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		BCBC2F1A2E406FAD0060C7BB /* Networking */ = {
+			isa = PBXGroup;
+			children = (
+				BCBC2F1C2E4071530060C7BB /* APIEndpoints.swift */,
+				BCBC2F192E406FAD0060C7BB /* APIClient.swift */,
+			);
+			path = Networking;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -354,16 +366,17 @@
 			buildActionMask = 2147483647;
 			files = (
 				BC9A9CEA2E40202400352F2B /* HomeView.swift in Sources */,
-
 				BCBC2EF92E4043F80060C7BB /* LoggingService.swift in Sources */,
 				BC9A9CEC2E40202400352F2B /* HomeViewModel.swift in Sources */,
-				BC9070362E402996004B0623 /* ModelIndex.swift in Sources */,
-				BC9070372E402996004B0623 /* APIService.swift in Sources */,
+				BCBC2F1D2E4071580060C7BB /* APIEndpoints.swift in Sources */,
+				BCBC2F152E406E640060C7BB /* AppConstants.swift in Sources */,
 				BC9A9CED2E40202400352F2B /* HomeService.swift in Sources */,
 				BC9A9CEF2E40202400352F2B /* AppRouter.swift in Sources */,
 				BC9A9CF02E40202400352F2B /* HomeModels.swift in Sources */,
 				BC9A9CD32E3F2D6A00352F2B /* ContentView.swift in Sources */,
+				BCBC2F1B2E406FAD0060C7BB /* APIClient.swift in Sources */,
 				BC9A9CD42E3F2D6A00352F2B /* MoneyAppApp.swift in Sources */,
+				BCBC2F182E406FA50060C7BB /* ModelIndex.swift in Sources */,
 				BCBC2EEC2E4031020060C7BB /* OnboardingFlowView.swift in Sources */,
 				BCBC2EED2E4031020060C7BB /* LoginViewModel.swift in Sources */,
 				BCBC2EEE2E4031020060C7BB /* OnboardingModels.swift in Sources */,

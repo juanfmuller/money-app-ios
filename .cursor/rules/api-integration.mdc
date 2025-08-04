@@ -10,13 +10,13 @@ alwaysApply: false
 This iOS app uses **polling-based data synchronization** with the FastAPI backend. No caching is implemented - all data is fetched fresh on demand for maximum simplicity and fast iteration.
 
 ## 📋 Data Models (Codable)
-**🚨 MANDATORY 🚨** Always check for /Generated models before implementing. `import MoneyAppGenerated`
+**🚨 MANDATORY 🚨** Always reference the `ModelIndex.swift` file for an updated list of API models!
 
 ### Request Models
-**AUTOMATICALLY GENERATED** Found in `money-app-ios/Generated`
+**AUTOMATICALLY GENERATED** Reference the `ModelIndex.swift` 
 
 ### Response Models
-**AUTOMATICALLY GENERATED** Found in `money-app-ios/Generated`
+**AUTOMATICALLY GENERATED** Reference the `ModelIndex.swift` 
 
 ## 📱 Polling Strategy Implementation
 

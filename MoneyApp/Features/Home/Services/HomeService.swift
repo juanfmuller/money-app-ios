@@ -18,10 +18,10 @@ protocol HomeServiceProtocol: Sendable {
 
 // MARK: - Actor Implementation
 actor HomeService: HomeServiceProtocol {
-    private let apiService: APIService
+    private let apiClient: APIClientProtocol
     
-    init(apiService: APIService = APIService.shared) {
-        self.apiService = apiService
+    init(apiClient: APIClientProtocol = APIClient.shared) {
+        self.apiClient = apiClient
     }
     
     func getDashboardSummary() async throws -> DashboardSummary {
@@ -45,16 +45,16 @@ actor HomeService: HomeServiceProtocol {
     }
     
     func getRecentTransactions(limit: Int = 5) async throws -> [Transaction] {
-        // Use existing API service method
-        let response = try await apiService.fetchTransactions()
+        // Use APIClient to fetch transactions
+        let response: TransactionListResponse = try await apiClient.get(APIEndpoints.Transactions.recent)
         
         // Convert API response to local models and limit results
         return Array(response.domainTransactions.prefix(limit))
     }
     
     func getAccountSummaries() async throws -> [AccountSummary] {
-        // Use existing API service method
-        let response = try await apiService.fetchAccounts()
+        // Use APIClient to fetch accounts
+        let response: AccountListResponse = try await apiClient.get(APIEndpoints.Accounts.list)
         
         // Convert API response to local models
         return response.domainAccounts
