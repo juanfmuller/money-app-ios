@@ -1,8 +1,13 @@
+---
+globs: *.swift
+alwaysApply: false
+---
+
 # 📊 iOS Logging & Analytics Rules
 
 ## Logging Philosophy
 
-This iOS app uses **Firebase Crashlytics** for comprehensive logging, crash reporting, and user flow tracking. The goal is to enable fast iteration by providing real-time insights into user behavior, crashes, and performance issues through a cloud-based dashboard.
+This iOS app uses **Firebase Analytics & Crashlytics** for comprehensive logging, crash reporting, and user flow tracking. The goal is to enable fast iteration by providing real-time insights into user behavior, crashes, and performance issues through a cloud-based dashboard.
 
 ## 🎯 Firebase Crashlytics Integration
 
@@ -12,180 +17,35 @@ This iOS app uses **Firebase Crashlytics** for comprehensive logging, crash repo
 2. **📱 Native iOS Support**: Excellent Swift/SwiftUI integration
 3. **🔍 User Flow Tracking**: Custom events and breadcrumbs
 4. **⚡ Fast Setup**: Minimal configuration required
-5. **💰 Free Tier**: Generous limits for MVP development
-6. **🎯 Crash Analysis**: Automatic crash grouping and analysis
+5. **🎯 Crash Analysis**: Automatic crash grouping and analysis
 
 ## 🏗️ Logging Architecture
-
-### Service Layer Integration
-
-```swift
-// ✅ GOOD: Protocol-based logging service with actor pattern
-protocol LoggingServiceProtocol: Sendable {
-    func logInfo(_ message: String, category: String, file: String, function: String, line: Int)
-    func logWarning(_ message: String, category: String, file: String, function: String, line: Int)
-    func logError(_ error: Error, category: String, file: String, function: String, line: Int)
-    func logUserAction(_ action: String, parameters: [String: Any]?)
-    func setUserIdentifier(_ userId: String)
-    func setCustomValue(_ value: Any, forKey key: String)
-}
-
-actor LoggingService: LoggingServiceProtocol {
-    private let crashlytics = Crashlytics.crashlytics()
-    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "MoneyApp", category: "default")
-    
-    // Implementation follows actor pattern for thread safety
-}
-```
 
 ### Global Logging Functions
 
 ```swift
-// ✅ GOOD: Simple global functions for quick logging
+// Simple global functions for quick logging
 func logInfo(_ message: String, category: String = "General")
 func logWarning(_ message: String, category: String = "General")
 func logError(_ error: Error, category: String = "General")
 func logUserAction(_ action: String, parameters: [String: Any]? = nil)
 ```
 
-## 📋 Logging Categories
-
-### Standard Categories
-
-```swift
-// Authentication & User Management
-"Auth"           // Login, logout, registration
-"User"           // User profile, settings
-
-// Navigation & UI
-"Navigation"     // Screen transitions, routing
-"UI"             // User interactions, form submissions
-
-// API & Networking
-"API"            // Network requests, responses
-"Network"        // Connection issues, timeouts
-
-// Business Logic
-"Accounts"       // Bank account linking, sync
-"Transactions"   // Transaction processing
-"Notifications"  // Push notification handling
-
-// System & Configuration
-"Configuration"  // App setup, initialization
-"Performance"    // Performance metrics, timing
-"Security"       // Token management, keychain
-```
 
 ## 🎯 Logging Patterns
 
-### 1. User Actions (Critical for Flow Tracking)
+1. User Actions (Critical for Flow Tracking)
 
-```swift
-// ✅ GOOD: Log all user interactions
-func login() async {
-    logUserAction("login_attempted", parameters: ["email": email])
-    
-    // ... login logic ...
-    
-    if success {
-        logUserAction("login_successful", parameters: [
-            "user_id": response.user.id,
-            "needs_onboarding": response.user.needsOnboarding
-        ])
-    } else {
-        logUserAction("login_failed", parameters: [
-            "error_type": String(describing: type(of: error))
-        ])
-    }
-}
-```
 
-### 2. Error Logging
-
-```swift
-// ✅ GOOD: Comprehensive error logging
-private func handleError(_ error: Error) {
-    logError(error, category: "Auth")
-    logUserAction("login_failed", parameters: [
-        "error_type": String(describing: type(of: error)),
-        "error_message": error.localizedDescription
-    ])
-    
-    // Handle error for user
-    showError = true
-    errorMessage = error.localizedDescription
-}
-```
+2. Error Logging
+✅ GOOD: Comprehensive error logging
 
 ### 3. Navigation Tracking
+✅ GOOD: Track all navigation events
 
-```swift
-// ✅ GOOD: Track all navigation events
-func navigateToMain() {
-    logInfo("Navigating to main app", category: "Navigation")
-    logUserAction("navigation_main_app")
-    router?.showMainApp()
-}
-```
 
 ### 4. API Call Tracking
-
-```swift
-// ✅ GOOD: Track API calls in services
-func login(_ request: LoginRequest) async throws -> AuthResponse {
-    logInfo("API call: POST /api/auth/login", category: "API")
-    
-    do {
-        let response = try await apiClient.post("/api/auth/login", body: request)
-        logInfo("API call successful: POST /api/auth/login", category: "API")
-        return response
-    } catch {
-        logError(error, category: "API")
-        throw error
-    }
-}
-```
-
-### 5. Performance Tracking
-
-```swift
-// ✅ GOOD: Track performance metrics
-func loadTransactions() async {
-    let startTime = Date()
-    
-    do {
-        transactions = try await transactionService.getRecent()
-        let duration = Date().timeIntervalSince(startTime)
-        
-        logInfo("Transactions loaded in \(duration)s", category: "Performance")
-        logUserAction("transactions_loaded", parameters: [
-            "count": transactions.count,
-            "duration": duration
-        ])
-    } catch {
-        logError(error, category: "Transactions")
-    }
-}
-```
-
-## 🔍 User Flow Tracking
-
-### Key User Flows to Track
-
-```swift
-// Authentication Flow
-"login_attempted" → "login_successful" → "navigation_main_app"
-"login_attempted" → "login_failed" → "login_retry"
-
-// Onboarding Flow
-"onboarding_started" → "account_linking_started" → "account_linked" → "onboarding_completed"
-
-// Transaction Flow
-"transactions_viewed" → "transaction_selected" → "transaction_details_viewed"
-
-// Error Recovery Flow
-"error_occurred" → "error_dismissed" → "retry_attempted"
-```
+✅ GOOD: Track API calls in services
 
 ## 🚨 Crash Reporting
 
@@ -205,114 +65,19 @@ func handleSuccessfulLogin(_ response: AuthResponse) async {
 }
 ```
 
-### Custom Crash Context
-
-```swift
-// ✅ GOOD: Add context before risky operations
-func performRiskyOperation() {
-    LoggingManager.shared.setCustomValue("risky_operation_started", forKey: "current_operation")
-    
-    do {
-        // ... risky operation ...
-        LoggingManager.shared.setCustomValue("risky_operation_completed", forKey: "current_operation")
-    } catch {
-        LoggingManager.shared.setCustomValue("risky_operation_failed", forKey: "current_operation")
-        throw error
-    }
-}
-```
-
-## 📊 Analytics Integration
-
-### Custom Events for Business Metrics
-
-```swift
-// ✅ GOOD: Track business-critical events
-func linkBankAccount() async {
-    logUserAction("bank_account_linking_started")
-    
-    do {
-        let result = try await accountService.linkAccount()
-        logUserAction("bank_account_linked", parameters: [
-            "institution": result.institutionName,
-            "account_count": result.accountCount
-        ])
-    } catch {
-        logUserAction("bank_account_linking_failed", parameters: [
-            "error_type": String(describing: type(of: error))
-        ])
-    }
-}
-```
-
-## 🔧 Setup Instructions
-
-### 1. Add Firebase Dependencies
-
-```swift
-// Package.swift
-dependencies: [
-    .package(url: "https://github.com/firebase/firebase-ios-sdk.git", from: "10.0.0")
-],
-targets: [
-    .target(
-        name: "MoneyApp",
-        dependencies: [
-            .product(name: "FirebaseCrashlytics", package: "firebase-ios-sdk"),
-            .product(name: "FirebaseAnalytics", package: "firebase-ios-sdk")
-        ]
-    )
-]
-```
-
-### 2. Initialize Firebase
-
-```swift
-// MoneyAppApp.swift
-init() {
-    FirebaseConfig.configure()
-}
-```
-
-### 3. Add GoogleService-Info.plist
-
-Download from Firebase Console and add to project.
-
-## 🎯 Dashboard Usage
-
-### Key Metrics to Monitor
-
-1. **Crash Rate**: Should be < 1% for production
-2. **User Flows**: Track completion rates for key flows
-3. **Error Patterns**: Identify common failure points
-4. **Performance**: Monitor API call durations
-5. **User Engagement**: Track feature usage
-
-### Real-time Debugging
-
-1. **Live Logs**: View logs in real-time during development
-2. **Crash Analysis**: Automatic grouping and stack traces
-3. **User Sessions**: Replay user sessions to debug issues
-4. **Custom Keys**: Filter crashes by user context
-
 ## 📚 Best Practices
 
 ### ✅ DO:
 
 - **Log all user actions** for flow tracking
-- **Use consistent categories** for filtering
 - **Include relevant parameters** for context
-- **Set user identifiers** for crash correlation
-- **Log before and after** risky operations
 - **Use descriptive action names** for analytics
 
 ### ❌ DON'T:
 
-- **Log sensitive data** (passwords, tokens)
 - **Over-log** (avoid logging every minor event)
 - **Use inconsistent naming** for actions
 - **Ignore error logging** (always log errors)
-- **Forget user context** in crash reports
 
 ## 🚀 Benefits for Fast Iteration
 
@@ -320,13 +85,4 @@ This logging setup enables:
 
 - **🔍 Real-time Debugging**: See issues as they happen
 - **📊 User Flow Analysis**: Understand what works and what doesn't
-- **🚨 Crash Prevention**: Catch issues before they affect users
-- **📈 Performance Monitoring**: Identify bottlenecks quickly
-- **🎯 Feature Validation**: Track feature adoption and usage
 - **🔄 Rapid Iteration**: Make data-driven decisions quickly
-
-**Firebase Crashlytics provides the perfect balance of simplicity and power for MVP development.** 🎯
-description:
-globs:
-alwaysApply: false
----

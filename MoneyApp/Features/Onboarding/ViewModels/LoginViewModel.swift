@@ -112,13 +112,13 @@ final class LoginViewModel {
     
     private func handleSuccessfulLogin(_ response: AuthResponse) async {
         logUserAction("login_successful", parameters: [
-            "user_id": response.user.id,
-            "needs_onboarding": response.user.needsOnboarding,
-            "is_first_login": response.isFirstLogin
+            "user_id": String(response.user.id),
+            "needs_onboarding": String(response.user.needsOnboarding),
+            "is_first_login": String(response.isFirstLogin)
         ])
         
         // Set user identifier for crash reporting
-        LoggingManager.shared.setUserIdentifier(String(response.user.id))
+        setUserIdentifier(String(response.user.id))
         
         currentUser = response.user
         isAuthenticated = true

@@ -29,7 +29,12 @@ This document defines **MANDATORY** development practices that must be followed 
 # Essential commands after EVERY Swift file change:
 # 1. Build project
 xcodebuild -project MoneyApp.xcodeproj -scheme MoneyApp -destination 'platform=iOS Simulator,name=iPhone 16' build
-# Must see: Build Succeeded!!!
+# MUST SEE: Build Succeeded!!!
+
+# 2. If build fails, grep the top 5 errors and plan steps to fix them
+xcodebuild -project MoneyApp.xcodeproj -scheme MoneyApp -destination 'platform=iOS Simulator,name=iPhone 16' build 2>&1 | grep -A 5 -B 5 "error:"
+
+# 3. **ITERATE** Build project again until it succeeds
 ```
 
 ## ⚠️🚨 Must Build Iteratively 🚨⚠️
