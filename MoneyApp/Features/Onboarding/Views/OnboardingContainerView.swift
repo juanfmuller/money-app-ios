@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import MoneyAppGenerated
 
 struct OnboardingContainerView: View {
     @EnvironmentObject var router: AppRouter

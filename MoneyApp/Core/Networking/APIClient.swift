@@ -40,7 +40,6 @@ actor APIClient: APIClientProtocol {
         do {
             let encoder = JSONEncoder()
             encoder.dateEncodingStrategy = .iso8601
-            encoder.keyEncodingStrategy = .convertToSnakeCase
             request.httpBody = try encoder.encode(body)
         } catch {
             throw OnboardingAPIError.encodingError
@@ -96,7 +95,6 @@ actor APIClient: APIClientProtocol {
                 do {
                     let decoder = JSONDecoder()
                     decoder.dateDecodingStrategy = .iso8601
-                    decoder.keyDecodingStrategy = .convertFromSnakeCase
                     return try decoder.decode(T.self, from: data)
                 } catch {
                     print("🔴 Decoding error for \(request.url?.path ?? "unknown"): \(error)")

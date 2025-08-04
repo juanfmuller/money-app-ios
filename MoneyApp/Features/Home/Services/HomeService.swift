@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import MoneyAppGenerated
 
 // MARK: - Protocol Definition
 protocol HomeServiceProtocol: Sendable {

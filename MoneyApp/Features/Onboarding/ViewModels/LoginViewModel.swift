@@ -7,7 +7,6 @@
 
 import Foundation
 import Observation
-import MoneyAppGenerated
 
 // MARK: - LoginViewModel (@Observable - Swift 6)
 
@@ -141,7 +140,7 @@ final class LoginViewModel {
             errorMessage = authError.localizedDescription
         case let apiError as OnboardingAPIError:
             errorMessage = apiError.localizedDescription
-        case let validationError as ValidationError:
+        case let validationError as ValidationError<LocalizedValidationError>:
             errorMessage = validationError.localizedDescription
         default:
             errorMessage = "An unexpected error occurred. Please try again."

@@ -7,7 +7,6 @@
 
 import SwiftUI
 import Combine
-import MoneyAppGenerated
 
 final class AppRouter: ObservableObject {
     @Published var currentScreen: Screen = .auth

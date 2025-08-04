@@ -7,7 +7,6 @@
 
 import Foundation
 import Observation
-import MoneyAppGenerated
 
 // MARK: - RegisterViewModel (@Observable - Swift 6)
 
@@ -245,7 +244,7 @@ final class RegisterViewModel {
         case let apiError as OnboardingAPIError:
             errorMessage = apiError.localizedDescription
             showError = true
-        case let validationError as ValidationError:
+        case let validationError as ValidationError<LocalizedValidationError>:
             errorMessage = validationError.localizedDescription
             showError = true
         default:

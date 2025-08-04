@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import MoneyAppGenerated
 
 struct OnboardingFlowView: View {
     @State private var viewModel = OnboardingFlowViewModel()

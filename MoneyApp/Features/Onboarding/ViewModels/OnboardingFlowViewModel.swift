@@ -7,7 +7,6 @@
 
 import Foundation
 import Observation
-import MoneyAppGenerated
 
 // MARK: - OnboardingFlowViewModel (@Observable - Swift 6)
 

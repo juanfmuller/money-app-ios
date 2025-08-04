@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import MoneyAppGenerated
 
 // MARK: - Onboarding Flow Models
 
@@ -51,7 +50,7 @@ struct OnboardingStep: Sendable {
 
 // MARK: - Validation Models
 
-enum ValidationError: LocalizedError {
+enum LocalizedValidationError: LocalizedError, Hashable {
     case required(field: String)
     case invalidFormat(field: String)
     case tooShort(field: String, minLength: Int)

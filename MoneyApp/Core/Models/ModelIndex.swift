@@ -23,38 +23,16 @@ import Foundation
 // MARK: - Request Models
 // Models used for API request payloads
 
-/// `DeviceTokenRequest.swift`
-/// `LinkTokenRequest.swift`
-/// `PublicTokenExchangeRequest.swift`
-/// `UserLoginRequest.swift`
-/// `UserRegistrationRequest.swift`
 
 // MARK: - Response Models
 // Models used for API response payloads
 
-/// `AccountInfo.swift`
-/// `AccountListResponse.swift`
-/// `AccountResponse.swift`
-/// `AccountSyncInfo.swift`
-/// `AuthTokenResponse.swift`
-/// `CategoriesResponse.swift`
-/// `DeviceTokenResponse.swift`
-/// `LinkTokenResponse.swift`
-/// `NotificationPreferencesResponse.swift`
-/// `PublicTokenExchangeResponse.swift`
-/// `RecentTransactionsResponse.swift`
-/// `SpendingSummaryResponse.swift`
-/// `SyncAccountsResponse.swift`
-/// `SyncStatusResponse.swift`
-/// `TransactionListResponse.swift`
-/// `TransactionResponse.swift`
-/// `UserResponse.swift`
+/// No response models found
 
 // MARK: - Supporting Models
 
-/// `CategorySpending.swift`
-/// `DailySpending.swift`
+/// No supporting models found
 
 // MARK: - Model Exports
-// All models are automatically available when importing MoneyAppGenerated
-// ONLY EDIT THIS FILE IF YOU MUST ADD ENHANCED EXPORTING FOR A MODEL!
+// No models found - check if generation was successful
+// ONLY EDIT THIS FILE IF YOU MUST QUICKLY ENHANCE A MODEL FOR DEVELOPMENT!
