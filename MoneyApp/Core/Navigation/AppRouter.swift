@@ -6,15 +6,19 @@
 //
 
 import SwiftUI
-import Observation
+import Combine
 
-@Observable
-final class AppRouter {
-    var currentScreen: Screen = .auth
-    var navigationPath = NavigationPath()
+final class AppRouter: ObservableObject {
+    @Published var currentScreen: Screen = .auth
+    @Published var navigationPath = NavigationPath()
+    
+    // Authentication state
+    @Published var isAuthenticated = false
+    @Published var currentUser: User?
     
     enum Screen: Hashable {
         case auth
+        case onboarding(User)
         case home
         case accounts
         case transactions
@@ -41,17 +45,28 @@ final class AppRouter {
         navigationPath = NavigationPath()
     }
     
-    // MARK: - Quick Navigation Methods
+    // MARK: - Authentication Navigation
     func showAuth() {
         navigate(to: .auth)
-        popToRoot() // Clear any navigation stack
+        popToRoot()
+        isAuthenticated = false
+        currentUser = nil
+    }
+    
+    func showOnboarding(for user: User) {
+        navigate(to: .onboarding(user))
+        popToRoot()
+        isAuthenticated = true
+        currentUser = user
     }
     
     func showMainApp() {
-        navigate(to: .home) // Default main screen
+        navigate(to: .home)
         popToRoot()
+        isAuthenticated = true
     }
     
+    // MARK: - App Navigation
     func showHome() {
         navigate(to: .home)
     }
@@ -67,6 +82,34 @@ final class AppRouter {
     func showSettings() {
         navigate(to: .settings)
     }
+    
+    // MARK: - Authentication Actions
+    func handleSuccessfulAuth(_ response: AuthResponse) {
+        currentUser = response.user
+        
+        if response.user.needsOnboarding || response.isFirstLogin {
+            showOnboarding(for: response.user)
+        } else {
+            showMainApp()
+        }
+    }
+    
+    func logout() async {
+        // Clear authentication state
+        isAuthenticated = false
+        currentUser = nil
+        
+        // Clear tokens through service
+        do {
+            let onboardingService = OnboardingService()
+            _ = try await onboardingService.logout()
+        } catch {
+            print("🔴 Logout error: \(error)")
+        }
+        
+        // Navigate to auth
+        showAuth()
+    }
 }
 
 // MARK: - Navigation Destinations
@@ -76,4 +119,13 @@ enum NavigationDestination: Hashable {
     case addTransaction
     case linkAccount
     case profile
+}
+
+// MARK: - Onboarding Destinations
+enum OnboardingDestination: Hashable {
+    case login
+    case register
+    case welcome
+    case onboardingStep(Int)
+    case completeOnboarding
 }

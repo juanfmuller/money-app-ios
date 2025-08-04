@@ -22,6 +22,21 @@
 		BC9A9CF02E40202400352F2B /* HomeModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC9A9CDB2E40202400352F2B /* HomeModels.swift */; };
 		BC9A9CF12E40202400352F2B /* PreviewAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BC9A9CE82E40202400352F2B /* PreviewAssets.xcassets */; };
 		BC9A9D122E40261800352F2B /* MoneyAppGenerated in Frameworks */ = {isa = PBXBuildFile; productRef = BC9A9D112E40261800352F2B /* MoneyAppGenerated */; };
+		BCBC2EEC2E4031020060C7BB /* OnboardingFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCBC2EE82E4031020060C7BB /* OnboardingFlowView.swift */; };
+		BCBC2EED2E4031020060C7BB /* LoginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCBC2EE22E4031020060C7BB /* LoginViewModel.swift */; };
+		BCBC2EEE2E4031020060C7BB /* OnboardingModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCBC2EDE2E4031020060C7BB /* OnboardingModels.swift */; };
+		BCBC2EEF2E4031020060C7BB /* OnboardingContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCBC2EE72E4031020060C7BB /* OnboardingContainerView.swift */; };
+		BCBC2EF02E4031020060C7BB /* OnboardingFlowViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCBC2EE32E4031020060C7BB /* OnboardingFlowViewModel.swift */; };
+		BCBC2EF12E4031020060C7BB /* RegisterViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCBC2EE42E4031020060C7BB /* RegisterViewModel.swift */; };
+		BCBC2EF22E4031020060C7BB /* RegisterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCBC2EE92E4031020060C7BB /* RegisterView.swift */; };
+		BCBC2EF32E4031020060C7BB /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCBC2EE62E4031020060C7BB /* LoginView.swift */; };
+		BCBC2EF42E4031020060C7BB /* OnboardingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCBC2EE02E4031020060C7BB /* OnboardingService.swift */; };
+		BCBC2EF82E4043F80060C7BB /* LoggingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCBC2EF52E4043F80060C7BB /* LoggingManager.swift */; };
+		BCBC2EF92E4043F80060C7BB /* LoggingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCBC2EF62E4043F80060C7BB /* LoggingService.swift */; };
+		BCBC2EFC2E4044000060C7BB /* FirebaseConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCBC2EFA2E4044000060C7BB /* FirebaseConfig.swift */; };
+		BCBC2EFF2E40442B0060C7BB /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = BCBC2EFE2E40442B0060C7BB /* README.md */; };
+		BCBC2F032E4045AC0060C7BB /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = BCBC2F022E4045AC0060C7BB /* FirebaseAnalytics */; };
+		BCBC2F052E4045AC0060C7BB /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = BCBC2F042E4045AC0060C7BB /* FirebaseCrashlytics */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,6 +52,19 @@
 		BC9A9CDF2E40202400352F2B /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
 		BC9A9CE12E40202400352F2B /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		BC9A9CE82E40202400352F2B /* PreviewAssets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = PreviewAssets.xcassets; sourceTree = "<group>"; };
+		BCBC2EDE2E4031020060C7BB /* OnboardingModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingModels.swift; sourceTree = "<group>"; };
+		BCBC2EE02E4031020060C7BB /* OnboardingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingService.swift; sourceTree = "<group>"; };
+		BCBC2EE22E4031020060C7BB /* LoginViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewModel.swift; sourceTree = "<group>"; };
+		BCBC2EE32E4031020060C7BB /* OnboardingFlowViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlowViewModel.swift; sourceTree = "<group>"; };
+		BCBC2EE42E4031020060C7BB /* RegisterViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterViewModel.swift; sourceTree = "<group>"; };
+		BCBC2EE62E4031020060C7BB /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		BCBC2EE72E4031020060C7BB /* OnboardingContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingContainerView.swift; sourceTree = "<group>"; };
+		BCBC2EE82E4031020060C7BB /* OnboardingFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlowView.swift; sourceTree = "<group>"; };
+		BCBC2EE92E4031020060C7BB /* RegisterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterView.swift; sourceTree = "<group>"; };
+		BCBC2EF52E4043F80060C7BB /* LoggingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingManager.swift; sourceTree = "<group>"; };
+		BCBC2EF62E4043F80060C7BB /* LoggingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingService.swift; sourceTree = "<group>"; };
+		BCBC2EFA2E4044000060C7BB /* FirebaseConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseConfig.swift; sourceTree = "<group>"; };
+		BCBC2EFE2E40442B0060C7BB /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -47,6 +75,8 @@
 				BC9A9D122E40261800352F2B /* MoneyAppGenerated in Frameworks */,
 				BC90703A2E402B34004B0623 /* MoneyAppGenerated in Frameworks */,
 				BC90702B2E40278E004B0623 /* MoneyAppGenerated in Frameworks */,
+				BCBC2F052E4045AC0060C7BB /* FirebaseCrashlytics in Frameworks */,
+				BCBC2F032E4045AC0060C7BB /* FirebaseAnalytics in Frameworks */,
 				BC90702E2E402959004B0623 /* MoneyAppGenerated in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -67,6 +97,7 @@
 			isa = PBXGroup;
 			children = (
 				BC9A9CD02E3F2D6A00352F2B /* MoneyApp */,
+				BCBC2EFE2E40442B0060C7BB /* README.md */,
 				BC9A9CBB2E3F2D3C00352F2B /* Products */,
 			);
 			sourceTree = "<group>";
@@ -104,6 +135,8 @@
 		BC9A9CDA2E40202400352F2B /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				BCBC2EFB2E4044000060C7BB /* Configuration */,
+				BCBC2EF72E4043F80060C7BB /* Logging */,
 				BC9A9CD92E40202400352F2B /* Navigation */,
 			);
 			path = Core;
@@ -155,6 +188,7 @@
 		BC9A9CE42E40202400352F2B /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				BCBC2EEB2E4031020060C7BB /* Onboarding */,
 				BC9A9CE32E40202400352F2B /* Home */,
 			);
 			path = Features;
@@ -166,6 +200,71 @@
 				BC9A9CE82E40202400352F2B /* PreviewAssets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		BCBC2EDF2E4031020060C7BB /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				BCBC2EDE2E4031020060C7BB /* OnboardingModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		BCBC2EE12E4031020060C7BB /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				BCBC2EE02E4031020060C7BB /* OnboardingService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		BCBC2EE52E4031020060C7BB /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				BCBC2EE22E4031020060C7BB /* LoginViewModel.swift */,
+				BCBC2EE32E4031020060C7BB /* OnboardingFlowViewModel.swift */,
+				BCBC2EE42E4031020060C7BB /* RegisterViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		BCBC2EEA2E4031020060C7BB /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				BCBC2EE62E4031020060C7BB /* LoginView.swift */,
+				BCBC2EE72E4031020060C7BB /* OnboardingContainerView.swift */,
+				BCBC2EE82E4031020060C7BB /* OnboardingFlowView.swift */,
+				BCBC2EE92E4031020060C7BB /* RegisterView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		BCBC2EEB2E4031020060C7BB /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				BCBC2EDF2E4031020060C7BB /* Models */,
+				BCBC2EE12E4031020060C7BB /* Services */,
+				BCBC2EE52E4031020060C7BB /* ViewModels */,
+				BCBC2EEA2E4031020060C7BB /* Views */,
+			);
+			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		BCBC2EF72E4043F80060C7BB /* Logging */ = {
+			isa = PBXGroup;
+			children = (
+				BCBC2EF52E4043F80060C7BB /* LoggingManager.swift */,
+				BCBC2EF62E4043F80060C7BB /* LoggingService.swift */,
+			);
+			path = Logging;
+			sourceTree = "<group>";
+		};
+		BCBC2EFB2E4044000060C7BB /* Configuration */ = {
+			isa = PBXGroup;
+			children = (
+				BCBC2EFA2E4044000060C7BB /* FirebaseConfig.swift */,
+			);
+			path = Configuration;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -189,6 +288,8 @@
 				BC90702A2E40278E004B0623 /* MoneyAppGenerated */,
 				BC90702D2E402959004B0623 /* MoneyAppGenerated */,
 				BC9070392E402B34004B0623 /* MoneyAppGenerated */,
+				BCBC2F022E4045AC0060C7BB /* FirebaseAnalytics */,
+				BCBC2F042E4045AC0060C7BB /* FirebaseCrashlytics */,
 			);
 			productName = MoneyApp;
 			productReference = BC9A9CBA2E3F2D3C00352F2B /* MoneyApp.app */;
@@ -220,6 +321,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				BC9070382E402B34004B0623 /* XCLocalSwiftPackageReference "Generated" */,
+				BCBC2F012E4045AC0060C7BB /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BC9A9CBB2E3F2D3C00352F2B /* Products */;
@@ -236,6 +338,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BCBC2EFF2E40442B0060C7BB /* README.md in Resources */,
 				BC9A9CF12E40202400352F2B /* PreviewAssets.xcassets in Resources */,
 				BC9A9CD22E3F2D6A00352F2B /* Assets.xcassets in Resources */,
 			);
@@ -249,6 +352,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				BC9A9CEA2E40202400352F2B /* HomeView.swift in Sources */,
+				BCBC2EF82E4043F80060C7BB /* LoggingManager.swift in Sources */,
+				BCBC2EF92E4043F80060C7BB /* LoggingService.swift in Sources */,
 				BC9A9CEC2E40202400352F2B /* HomeViewModel.swift in Sources */,
 				BC9070362E402996004B0623 /* ModelIndex.swift in Sources */,
 				BC9070372E402996004B0623 /* APIService.swift in Sources */,
@@ -257,6 +362,16 @@
 				BC9A9CF02E40202400352F2B /* HomeModels.swift in Sources */,
 				BC9A9CD32E3F2D6A00352F2B /* ContentView.swift in Sources */,
 				BC9A9CD42E3F2D6A00352F2B /* MoneyAppApp.swift in Sources */,
+				BCBC2EEC2E4031020060C7BB /* OnboardingFlowView.swift in Sources */,
+				BCBC2EED2E4031020060C7BB /* LoginViewModel.swift in Sources */,
+				BCBC2EEE2E4031020060C7BB /* OnboardingModels.swift in Sources */,
+				BCBC2EEF2E4031020060C7BB /* OnboardingContainerView.swift in Sources */,
+				BCBC2EFC2E4044000060C7BB /* FirebaseConfig.swift in Sources */,
+				BCBC2EF02E4031020060C7BB /* OnboardingFlowViewModel.swift in Sources */,
+				BCBC2EF12E4031020060C7BB /* RegisterViewModel.swift in Sources */,
+				BCBC2EF22E4031020060C7BB /* RegisterView.swift in Sources */,
+				BCBC2EF32E4031020060C7BB /* LoginView.swift in Sources */,
+				BCBC2EF42E4031020060C7BB /* OnboardingService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -472,6 +587,17 @@
 		};
 /* End XCLocalSwiftPackageReference section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		BCBC2F012E4045AC0060C7BB /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		BC90702A2E40278E004B0623 /* MoneyAppGenerated */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -488,6 +614,16 @@
 		BC9A9D112E40261800352F2B /* MoneyAppGenerated */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = MoneyAppGenerated;
+		};
+		BCBC2F022E4045AC0060C7BB /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BCBC2F012E4045AC0060C7BB /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		BCBC2F042E4045AC0060C7BB /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BCBC2F012E4045AC0060C7BB /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

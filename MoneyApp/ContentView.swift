@@ -8,13 +8,15 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var router = AppRouter()
+    @StateObject private var router = AppRouter()
     
     var body: some View {
         Group {
             switch router.currentScreen {
             case .auth:
-                authView
+                OnboardingContainerView()
+            case .onboarding(let user):
+                OnboardingFlowView(user: user)
             case .home:
                 HomeView()
             case .accounts:
@@ -25,26 +27,27 @@ struct ContentView: View {
                 settingsPlaceholder
             }
         }
-        .environment(router)
+        .environmentObject(router)
+        .onAppear {
+            checkAuthenticationState()
+        }
     }
     
-    // MARK: - Placeholder Views
-    private var authView: some View {
-        VStack(spacing: 20) {
-            Text("Money App")
-                .font(.largeTitle)
-                .fontWeight(.bold)
+    // MARK: - Authentication Check
+    private func checkAuthenticationState() {
+        Task {
+            // Check if user is already authenticated
+            let tokenManager = TokenManager.shared
+            let isAuthenticated = await tokenManager.isAuthenticated()
             
-            Text("Welcome! Authentication will be implemented in the next feature.")
-                .multilineTextAlignment(.center)
-                .foregroundColor(.secondary)
-            
-            Button("Go to Home (Demo)") {
+            if isAuthenticated {
+                // TODO: Get current user from API/storage
+                // For now, redirect to main app
                 router.showMainApp()
+            } else {
+                router.showAuth()
             }
-            .buttonStyle(.borderedProminent)
         }
-        .padding()
     }
     
     private var accountsPlaceholder: some View {

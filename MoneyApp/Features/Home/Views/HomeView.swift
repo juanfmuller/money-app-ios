@@ -9,7 +9,7 @@ import SwiftUI
 
 struct HomeView: View {
     @State private var viewModel = HomeViewModel()
-    @Environment(AppRouter.self) private var router
+    @EnvironmentObject var router: AppRouter
     
     var body: some View {
         NavigationStack {
@@ -267,5 +267,5 @@ struct HomeView: View {
 
 #Preview {
     HomeView()
-        .environment(AppRouter())
+        .environmentObject(AppRouter())
 }

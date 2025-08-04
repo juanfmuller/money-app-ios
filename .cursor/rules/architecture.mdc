@@ -21,7 +21,7 @@ MoneyApp/
 │   │   │   ├── LoginView.swift
 │   │   │   ├── RegisterView.swift
 │   │   │   └── ProfileView.swift
-│   │   ├── ViewModels/         # @ObservableObject business logic
+│   │   ├── ViewModels/         # @Observable business logic
 │   │   │   ├── LoginViewModel.swift
 │   │   │   ├── RegisterViewModel.swift
 │   │   │   └── ProfileViewModel.swift
@@ -47,64 +47,19 @@ MoneyApp/
 │   │   │   └── LinkTokenResponse.swift
 │   │   └── Services/
 │   │       └── AccountService.swift
-│   │
-│   ├── Transactions/           # Financial transactions
-│   │   ├── Views/
-│   │   │   ├── TransactionListView.swift
-│   │   │   ├── TransactionDetailView.swift
-│   │   │   └── SpendingSummaryView.swift
-│   │   ├── ViewModels/
-│   │   │   ├── TransactionListViewModel.swift
-│   │   │   ├── TransactionDetailViewModel.swift
-│   │   │   └── SpendingSummaryViewModel.swift
-│   │   ├── Models/
-│   │   │   ├── Transaction.swift
-│   │   │   ├── SpendingSummary.swift
-│   │   │   └── TransactionCategory.swift
-│   │   └── Services/
-│   │       └── TransactionService.swift
-│   │
-│   └── Notifications/          # Push notifications
-│       ├── Views/
-│       │   └── NotificationSettingsView.swift
-│       ├── ViewModels/
-│       │   └── NotificationSettingsViewModel.swift
-│       ├── Models/
-│       │   └── NotificationPreferences.swift
-│       └── Services/
-│           └── NotificationService.swift
 │
 ├── Shared/                     # Cross-feature components
 │   ├── Models/                 # Common data structures
-│   │   ├── APIResponse.swift
-│   │   ├── APIError.swift
-│   │   └── PaginationInfo.swift
 │   ├── Views/                  # Reusable UI components
-│   │   ├── LoadingView.swift
-│   │   ├── ErrorView.swift
-│   │   └── PullToRefreshView.swift
+│   │   ├── Button.swift
 │   └── Services/               # Shared networking utilities
-│       ├── APIClient.swift
 │       └── KeychainService.swift
 │
 ├── Core/                       # Infrastructure & configuration
 │   ├── Networking/
 │   │   ├── NetworkManager.swift
-│   │   ├── RequestBuilder.swift
-│   │   └── ResponseParser.swift
-│   ├── Security/
-│   │   ├── TokenManager.swift
-│   │   ├── BiometricAuth.swift
-│   │   └── SecureStorage.swift
-│   └── Configuration/
-│       ├── AppConfig.swift
-│       ├── Environment.swift
-│       └── Constants.swift
-│
-└── Resources/                  # Assets, strings, etc.
-    ├── Assets.xcassets/
-    ├── Localizable.strings
-    └── Info.plist
+│   ├── Navigation/
+│   │   ├── AppRouter.swift
 ```
 
 ## 🎭 MVVM Layer Responsibilities
@@ -126,52 +81,6 @@ MoneyApp/
 - Perform data transformations
 - Handle authentication
 
-```swift
-// ✅ GOOD: View focuses on UI only with Swift 6 @Observable
-struct LoginView: View {
-    @State private var viewModel = LoginViewModel()
-    
-    var body: some View {
-        VStack {
-            TextField("Email", text: $viewModel.email)
-            SecureField("Password", text: $viewModel.password)
-            
-            Button("Login") {
-                Task { await viewModel.login() }
-            }
-            .disabled(viewModel.isLoading)
-        }
-        .alert("Error", isPresented: $viewModel.showError) {
-            Button("OK") { }
-        } message: {
-            Text(viewModel.errorMessage)
-        }
-    }
-}
-
-// ❌ BAD: View contains business logic
-struct LoginView: View {
-    @State private var email = ""
-    @State private var password = ""
-    
-    var body: some View {
-        VStack {
-            TextField("Email", text: $email)
-            SecureField("Password", text: $password)
-            
-            Button("Login") {
-                // ❌ DON'T: API call in view
-                Task {
-                    let request = LoginRequest(email: email, password: password)
-                    let response = try await APIClient.shared.post("/auth/login", body: request)
-                    // Handle response...
-                }
-            }
-        }
-    }
-}
-```
-
 ### 2. ViewModels (@Observable) - Business Logic
 
 **Purpose**: Contain all business logic and coordinate between Views and Services
@@ -190,51 +99,6 @@ struct LoginView: View {
 - Contain UI-specific code
 - Store credentials or tokens
 - Implement networking logic
-
-```swift
-// ✅ GOOD: ViewModel handles business logic with Swift 6 @Observable
-@Observable
-@MainActor
-class LoginViewModel {
-    var email = ""
-    var password = ""
-    var isLoading = false
-    var showError = false
-    var errorMessage = ""
-    
-    private let authService: AuthServiceProtocol
-    
-    init(authService: AuthServiceProtocol = AuthService()) {
-        self.authService = authService
-    }
-    
-    func login() async {
-        guard isValidInput() else {
-            showErrorMessage("Please enter valid email and password")
-            return
-        }
-        
-        isLoading = true
-        do {
-            let request = LoginRequest(email: email, password: password)
-            let response = try await authService.login(request)
-            handleSuccessfulLogin(response)
-        } catch {
-            handleError(error)
-        }
-        isLoading = false
-    }
-    
-    private func isValidInput() -> Bool {
-        !email.isEmpty && !password.isEmpty && email.contains("@")
-    }
-    
-    private func handleError(_ error: Error) {
-        errorMessage = error.localizedDescription
-        showError = true
-    }
-}
-```
 
 ### 3. Services - API Integration & Protocol-Based Design
 
@@ -255,42 +119,6 @@ class LoginViewModel {
 - Transform data for UI (return raw API responses)
 - Store credentials directly (use secure storage)
 
-```swift
-// ✅ GOOD: Protocol-based service with dependency injection
-protocol AuthServiceProtocol: Sendable {
-    func login(_ request: LoginRequest) async throws -> AuthResponse
-    func register(_ request: RegisterRequest) async throws -> AuthResponse
-    func updateDeviceToken(_ token: String) async throws
-}
-
-actor AuthService: AuthServiceProtocol {
-    private let apiClient: APIClientProtocol
-    private let tokenManager: TokenManagerProtocol
-    
-    init(apiClient: APIClientProtocol = APIClient.shared, 
-         tokenManager: TokenManagerProtocol = TokenManager.shared) {
-        self.apiClient = apiClient
-        self.tokenManager = tokenManager
-    }
-    
-    func login(_ request: LoginRequest) async throws -> AuthResponse {
-        let response: AuthResponse = try await apiClient.post("/api/auth/login", body: request)
-        await tokenManager.saveTokens(accessToken: response.accessToken, 
-                                    refreshToken: response.refreshToken)
-        return response
-    }
-    
-    func register(_ request: RegisterRequest) async throws -> AuthResponse {
-        return try await apiClient.post("/api/auth/register", body: request)
-    }
-    
-    func updateDeviceToken(_ token: String) async throws {
-        let request = DeviceTokenRequest(deviceToken: token)
-        let _: SuccessResponse = try await apiClient.post("/api/auth/device-token", body: request)
-    }
-}
-```
-
 ### 4. Models (Codable) - Data Contracts
 
 **Purpose**: Define data structures that match backend API schemas
@@ -306,245 +134,43 @@ actor AuthService: AuthServiceProtocol {
 - Store state or behavior
 - Contain networking code
 
-```swift
-// ✅ GOOD: Model matches backend schema
-struct User: Codable, Identifiable {
-    let id: Int
-    let email: String
-    let firstName: String?
-    let lastName: String?
-    let isActive: Bool
-    let createdAt: Date
-    let deviceToken: String?
-    
-    // Computed properties for UI convenience
-    var displayName: String {
-        if let firstName = firstName, let lastName = lastName {
-            return "\(firstName) \(lastName)"
-        } else if let firstName = firstName {
-            return firstName
-        } else {
-            return email
-        }
-    }
-    
-    // CodingKeys to match backend snake_case
-    enum CodingKeys: String, CodingKey {
-        case id, email
-        case firstName = "first_name"
-        case lastName = "last_name"
-        case isActive = "is_active"
-        case createdAt = "created_at"
-        case deviceToken = "device_token"
-    }
-}
-```
-
 ## 🔄 Data Flow Pattern
 
 The data should flow in a unidirectional pattern:
 
 ```
 User Interaction → View → ViewModel → Service → API
-                ↑                              ↓
-                └── Update UI ← Transform ← Response
+                            ↑                    ↓
+                            └── ← Transform ← Response
 ```
 
-1. **User Interaction**: User taps button, enters text, etc.
-2. **View**: Calls appropriate ViewModel method
-3. **ViewModel**: Validates input, calls Service
-4. **Service**: Makes API request
-5. **API Response**: Returns data
-6. **Service**: Returns raw response to ViewModel
-7. **ViewModel**: Transforms data, updates @Published properties
-8. **View**: Automatically updates via @StateObject binding
-
-## 🚨 Architecture Violations
+## 🚨 Architecture Mandatory Considerations
 
 ### ❌ Common Anti-Patterns
 
-```swift
-// ❌ DON'T: View making API calls
-struct TransactionListView: View {
-    @State private var transactions: [Transaction] = []
-    
-    var body: some View {
-        List(transactions) { transaction in
-            TransactionRow(transaction: transaction)
-        }
-        .onAppear {
-            // ❌ BAD: API call in view
-            Task {
-                transactions = try await APIClient.shared.get("/api/transactions")
-            }
-        }
-    }
-}
-
-// ❌ DON'T: Service containing business logic
-class TransactionService {
-    func getTransactions() async throws -> [Transaction] {
-        let transactions = try await apiClient.get("/api/transactions")
-        
-        // ❌ BAD: Business logic in service
-        let filtered = transactions.filter { $0.amount > 100 }
-        let sorted = filtered.sorted { $0.date > $1.date }
-        
-        return sorted
-    }
-}
-
-// ❌ DON'T: Model with networking
-struct Transaction: Codable {
-    let id: Int
-    let amount: Decimal
-    let date: Date
-    
-    // ❌ BAD: Networking in model
-    func sync() async throws {
-        try await APIClient.shared.post("/api/transactions/\(id)/sync")
-    }
-}
-```
+1. ❌ DON'T: View making API calls
+2. ❌ DON'T: Service containing business logic
+3. ❌ DON'T: Model with networking
 
 ### ✅ Correct Architecture
 
-```swift
-// ✅ GOOD: View delegates to ViewModel with Swift 6 @Observable
-struct TransactionListView: View {
-    @State private var viewModel = TransactionListViewModel()
-    
-    var body: some View {
-        List(viewModel.filteredTransactions) { transaction in
-            TransactionRow(transaction: transaction)
-        }
-        .onAppear {
-            Task { await viewModel.loadTransactions() }
-        }
-    }
-}
+1. ✅ GOOD: View delegates to ViewModel with Swift 6 @Observable
+2. ✅ GOOD: ViewModel contains business logic with @Observable
+3. ✅ GOOD: Protocol-based service with proper concurrency
+4. ✅ GOOD: Model is pure data
 
-// ✅ GOOD: ViewModel contains business logic with @Observable
-@Observable
-@MainActor
-class TransactionListViewModel {
-    var transactions: [Transaction] = []
-    var minAmount: Decimal = 0
-    var isLoading = false
-    var errorMessage = ""
-    
-    private let transactionService: TransactionServiceProtocol
-    
-    init(transactionService: TransactionServiceProtocol = TransactionService()) {
-        self.transactionService = transactionService
-    }
-    
-    var filteredTransactions: [Transaction] {
-        transactions
-            .filter { $0.amount > minAmount }
-            .sorted { $0.date > $1.date }
-    }
-    
-    func loadTransactions() async {
-        isLoading = true
-        do {
-            transactions = try await transactionService.getTransactions()
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-        isLoading = false
-    }
-}
-
-// ✅ GOOD: Protocol-based service with proper concurrency
-protocol TransactionServiceProtocol: Sendable {
-    func getTransactions() async throws -> [Transaction]
-}
-
-actor TransactionService: TransactionServiceProtocol {
-    private let apiClient: APIClientProtocol
-    
-    init(apiClient: APIClientProtocol = APIClient.shared) {
-        self.apiClient = apiClient
-    }
-    
-    func getTransactions() async throws -> [Transaction] {
-        return try await apiClient.get("/api/transactions")
-    }
-}
-
-// ✅ GOOD: Model is pure data
-struct Transaction: Codable, Identifiable {
-    let id: Int
-    let amount: Decimal
-    let date: Date
-    let merchantName: String
-    let category: String
-}
-```
-
-## 📱 SwiftUI Specific Guidelines
+## Specific Guidelines
 
 ### State Management
 
-```swift
-// ✅ GOOD: Proper state management with Swift 6 @Observable
-struct ContentView: View {
-    @State private var authViewModel = AuthViewModel()  // Owner with @State
-    
-    var body: some View {
-        if authViewModel.isAuthenticated {
-            MainTabView()
-                .environment(authViewModel)  // Pass down with .environment()
-        } else {
-            LoginView()
-        }
-    }
-}
-
-struct MainTabView: View {
-    @Environment(AuthViewModel.self) private var authViewModel  // Receive from parent
-    
-    var body: some View {
-        TabView {
-            TransactionListView()
-                .tabItem { Label("Transactions", systemImage: "list.bullet") }
-        }
-    }
-}
-
-// For binding to child views
-struct ProfileEditView: View {
-    @Bindable var user: User  // Use @Bindable for two-way binding
-    
-    var body: some View {
-        TextField("First Name", text: $user.firstName)
-        TextField("Last Name", text: $user.lastName)
-    }
-}
-```
+1. ✅ GOOD: Proper state management with Swift 6 @Observable
+2. ✅ GOOD: Use modern Swift async/await
+3. ✅ GOOD: Moderns Swift 6 standards only
 
 ### Navigation Patterns
 
-```swift
-// ✅ GOOD: NavigationStack with proper data passing
-struct TransactionListView: View {
-    @StateObject private var viewModel = TransactionListViewModel()
-    
-    var body: some View {
-        NavigationStack {
-            List(viewModel.transactions) { transaction in
-                NavigationLink {
-                    TransactionDetailView(transaction: transaction)
-                } label: {
-                    TransactionRow(transaction: transaction)
-                }
-            }
-            .navigationTitle("Transactions")
-        }
-    }
-}
-```
+1. ✅ GOOD: Only use the custom AppRouter implementation `MoneyApp/Core/Navigation/AppRouter.swift`
+
 
 ## 🔄 Adding New Features
 
@@ -654,10 +280,12 @@ struct NewFeatureView: View {
 }
 ```
 
-6. **Write Tests** (Test-driven development)
-```swift
-// Tests/NewFeatureViewModelTests.swift
-// Tests/NewFeatureServiceTests.swift
+6. **Build Project** (Verify error and warning free)
+```bash
+# Essential commands after EVERY Swift file change:
+# 1. Build project
+xcodebuild -project MoneyApp.xcodeproj -scheme MoneyApp -destination 'platform=iOS Simulator,name=iPhone 16' build
+# Must see: Build Succeeded!!!
 ```
 
 ## 🎯 Architecture Benefits
@@ -673,7 +301,7 @@ This architecture provides:
 
 ## 📚 Quick Reference Checklist
 
-Before submitting code, verify:
+**MANDATORY** Before moving on, verify:
 
 - [ ] Code is organized by feature, not technical layer
 - [ ] Views only contain SwiftUI UI code
